@@ -86,18 +86,25 @@ flutter build apk --debug
 
 ## 临时文件约定
 
-以下文件属于本地调试或验证产物，不应提交：
+所有临时调试、截图、快照与一次性验证产物，后续统一放入项目根目录的 `temp/`。
 
-- `.playwright-mcp/`
-- `playwright-*.md`
-- `art-frame-*.png`
-- Flutter / Gradle / build 缓存目录
+当前约定：
 
-对应忽略规则已写入 `.gitignore`。
+- `temp/` 下的内容默认不提交
+- 仅保留 `temp/.gitkeep` 用于占位
+- 不再把临时文件直接散落在项目根目录
+
+典型临时产物包括：
+
+- 调试截图
+- Playwright / DevTools 快照
+- 一次性验证图片
+- 本地临时输出文件
 
 ## 当前实现状态
 
 OpenSpec change `build-flutter-multi-platform-foundation` 当前进度为 **17/18**。
+Phase 1 change `add-local-file-sources` 已完成实现、自动化验证以及 Android 虚拟机手工验收。
 
 已完成：
 
@@ -108,13 +115,16 @@ OpenSpec change `build-flutter-multi-platform-foundation` 当前进度为 **17/1
 - `flutter analyze`
 - `flutter test`
 - Web URL / 响应式验证
+- `localFiles` 图源导入、持久化、播放与删除回收
 
 未完全完成：
 
 - 多终端设备冒烟验证中的部分模拟器实测
+- Phase 2 `localDirectory` 图源仍处于规划阶段
 
 ## 后续建议
 
 - 将 `applicationId` 从默认 `com.example.art_frame` 调整为正式包名
 - 视需要把 Kotlin `jvmTarget` 迁移到 `compilerOptions` DSL
 - 补齐 Android Phone / Android Tablet / iPhone / iPad 的完整冒烟记录
+- 继续推进 Phase 2 本地目录图源能力

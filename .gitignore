@@ -12,8 +12,10 @@
 .swiftpm/
 migrate_working_dir/
 .playwright-mcp/
-playwright-*.md
-art-frame-*.png
+
+# Temporary artifacts
+/temp/
+!/temp/.gitkeep
 
 # IntelliJ related
 *.iml

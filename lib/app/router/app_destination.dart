@@ -1,6 +1,6 @@
 enum AppDestination {
-  home('/home'),
-  gallery('/gallery'),
+  sources('/sources'),
+  playback('/playback'),
   settings('/settings');
 
   const AppDestination(this.path);

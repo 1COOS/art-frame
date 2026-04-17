@@ -107,26 +107,26 @@ abstract class AppLocalizations {
   /// No description provided for @shellHeadline.
   ///
   /// In en, this message translates to:
-  /// **'Multi-platform foundation ready'**
+  /// **'Showcase rewrite foundation is ready'**
   String get shellHeadline;
 
   /// No description provided for @shellDescription.
   ///
   /// In en, this message translates to:
-  /// **'This baseline validates routing, adaptive layout, and localization before business features are added.'**
+  /// **'This baseline now supports a bundled local source, persisted playback settings, and a minimal playback loop.'**
   String get shellDescription;
 
-  /// No description provided for @homeTab.
+  /// No description provided for @sourcesTab.
   ///
   /// In en, this message translates to:
-  /// **'Home'**
-  String get homeTab;
+  /// **'Sources'**
+  String get sourcesTab;
 
-  /// No description provided for @galleryTab.
+  /// No description provided for @playbackTab.
   ///
   /// In en, this message translates to:
-  /// **'Gallery'**
-  String get galleryTab;
+  /// **'Playback'**
+  String get playbackTab;
 
   /// No description provided for @settingsTab.
   ///
@@ -164,40 +164,40 @@ abstract class AppLocalizations {
   /// **'Chinese'**
   String get languageChinese;
 
-  /// No description provided for @homeTitle.
+  /// No description provided for @sourcesTitle.
   ///
   /// In en, this message translates to:
-  /// **'Foundation home'**
-  String get homeTitle;
+  /// **'Local bundled sources'**
+  String get sourcesTitle;
 
-  /// No description provided for @homeBody.
+  /// No description provided for @sourcesBody.
   ///
   /// In en, this message translates to:
-  /// **'Use this shell to verify startup, top-level navigation, and locale changes.'**
-  String get homeBody;
+  /// **'Start with bundled local images to validate source selection, persistence, and playback flow before adding device pickers.'**
+  String get sourcesBody;
 
-  /// No description provided for @galleryTitle.
+  /// No description provided for @playbackTitle.
   ///
   /// In en, this message translates to:
-  /// **'Adaptive gallery'**
-  String get galleryTitle;
+  /// **'Playback'**
+  String get playbackTitle;
 
-  /// No description provided for @galleryBody.
+  /// No description provided for @playbackBody.
   ///
   /// In en, this message translates to:
-  /// **'Resize the window to confirm phone, tablet, and wide layouts share the same destinations.'**
-  String get galleryBody;
+  /// **'The selected source rotates automatically and can be manually browsed.'**
+  String get playbackBody;
 
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Foundation settings'**
+  /// **'Playback settings'**
   String get settingsTitle;
 
   /// No description provided for @settingsBody.
   ///
   /// In en, this message translates to:
-  /// **'Runtime locale switching is managed at the app layer with Riverpod.'**
+  /// **'Locale and playback interval are stored locally so the minimal loop survives restarts.'**
   String get settingsBody;
 
   /// No description provided for @phoneLayout.
@@ -218,23 +218,155 @@ abstract class AppLocalizations {
   /// **'Wide'**
   String get wideLayout;
 
-  /// No description provided for @routeHome.
+  /// No description provided for @routeSources.
   ///
   /// In en, this message translates to:
-  /// **'/home'**
-  String get routeHome;
+  /// **'/sources'**
+  String get routeSources;
 
-  /// No description provided for @routeGallery.
+  /// No description provided for @routePlayback.
   ///
   /// In en, this message translates to:
-  /// **'/gallery'**
-  String get routeGallery;
+  /// **'/playback'**
+  String get routePlayback;
 
   /// No description provided for @routeSettings.
   ///
   /// In en, this message translates to:
   /// **'/settings'**
   String get routeSettings;
+
+  /// No description provided for @selectedSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected source'**
+  String get selectedSourceLabel;
+
+  /// No description provided for @itemsCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get itemsCountLabel;
+
+  /// No description provided for @openPlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Open playback'**
+  String get openPlayback;
+
+  /// No description provided for @selectSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select source'**
+  String get selectSource;
+
+  /// No description provided for @noSourceSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No source selected yet'**
+  String get noSourceSelected;
+
+  /// No description provided for @chooseSourceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a source first, then switch to playback.'**
+  String get chooseSourceHint;
+
+  /// No description provided for @autoplayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Autoplay'**
+  String get autoplayLabel;
+
+  /// No description provided for @intervalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval'**
+  String get intervalLabel;
+
+  /// No description provided for @secondsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'s'**
+  String get secondsUnit;
+
+  /// No description provided for @sourceReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to play'**
+  String get sourceReady;
+
+  /// No description provided for @builtInSourceBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Bundled local'**
+  String get builtInSourceBadge;
+
+  /// No description provided for @playbackEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a source to start'**
+  String get playbackEmptyTitle;
+
+  /// No description provided for @playbackEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the sources tab, choose a bundled local collection, then return here to preview the loop.'**
+  String get playbackEmptyBody;
+
+  /// No description provided for @goToSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to sources'**
+  String get goToSources;
+
+  /// No description provided for @nextFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextFrame;
+
+  /// No description provided for @previousFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get previousFrame;
+
+  /// No description provided for @addLocalFilesSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Add local files'**
+  String get addLocalFilesSource;
+
+  /// No description provided for @localFilesSourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local files'**
+  String get localFilesSourceTitle;
+
+  /// No description provided for @localFilesSourceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Images picked from this device and stored as a reusable local source.'**
+  String get localFilesSourceDescription;
+
+  /// No description provided for @localFilesSourceBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Local files'**
+  String get localFilesSourceBadge;
+
+  /// No description provided for @removeSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeSource;
+
+  /// No description provided for @localFilesImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} local files'**
+  String localFilesImported(int count);
 }
 
 class _AppLocalizationsDelegate

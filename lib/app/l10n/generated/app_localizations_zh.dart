@@ -12,16 +12,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appTitle => 'Art Frame';
 
   @override
-  String get shellHeadline => '多平台基础框架已就绪';
+  String get shellHeadline => 'Showcase Flutter 重写基础已就绪';
 
   @override
-  String get shellDescription => '该基础壳层用于在接入业务功能前验证路由、自适配布局与本地化能力。';
+  String get shellDescription => '当前基线已打通内置本地图源、播放设置持久化，以及最小播放闭环。';
 
   @override
-  String get homeTab => '首页';
+  String get sourcesTab => '图源';
 
   @override
-  String get galleryTab => '画廊';
+  String get playbackTab => '播放';
 
   @override
   String get settingsTab => '设置';
@@ -42,22 +42,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageChinese => '中文';
 
   @override
-  String get homeTitle => '基础首页';
+  String get sourcesTitle => '内置本地图源';
 
   @override
-  String get homeBody => '使用此壳层验证启动、顶层导航以及语言切换。';
+  String get sourcesBody => '先用应用内置本地图片验证图源选择、持久化与播放流程，后续再接入设备文件选择。';
 
   @override
-  String get galleryTitle => '自适应画廊';
+  String get playbackTitle => '播放页';
 
   @override
-  String get galleryBody => '调整窗口尺寸以验证手机、平板与宽屏布局复用同一组目的地。';
+  String get playbackBody => '当前选中的图源会自动轮播，也支持手动切换。';
 
   @override
-  String get settingsTitle => '基础设置';
+  String get settingsTitle => '播放设置';
 
   @override
-  String get settingsBody => '运行时语言切换由应用层的 Riverpod 状态统一管理。';
+  String get settingsBody => '语言与播放间隔会本地保存，确保最小闭环重启后仍可恢复。';
 
   @override
   String get phoneLayout => '手机';
@@ -69,11 +69,79 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wideLayout => '宽屏';
 
   @override
-  String get routeHome => '/home';
+  String get routeSources => '/sources';
 
   @override
-  String get routeGallery => '/gallery';
+  String get routePlayback => '/playback';
 
   @override
   String get routeSettings => '/settings';
+
+  @override
+  String get selectedSourceLabel => '当前图源';
+
+  @override
+  String get itemsCountLabel => '内容数';
+
+  @override
+  String get openPlayback => '打开播放';
+
+  @override
+  String get selectSource => '选择图源';
+
+  @override
+  String get noSourceSelected => '尚未选择图源';
+
+  @override
+  String get chooseSourceHint => '请先在图源页选择一个图源，再切到播放页。';
+
+  @override
+  String get autoplayLabel => '自动播放';
+
+  @override
+  String get intervalLabel => '播放间隔';
+
+  @override
+  String get secondsUnit => '秒';
+
+  @override
+  String get sourceReady => '可立即播放';
+
+  @override
+  String get builtInSourceBadge => '内置本地';
+
+  @override
+  String get playbackEmptyTitle => '先选择一个图源';
+
+  @override
+  String get playbackEmptyBody => '前往图源页选择一个内置本地集合，然后回到这里预览轮播效果。';
+
+  @override
+  String get goToSources => '前往图源页';
+
+  @override
+  String get nextFrame => '下一张';
+
+  @override
+  String get previousFrame => '上一张';
+
+  @override
+  String get addLocalFilesSource => '添加本地文件';
+
+  @override
+  String get localFilesSourceTitle => '本地文件';
+
+  @override
+  String get localFilesSourceDescription => '从当前设备选择图片，并保存为可复用的本地图源。';
+
+  @override
+  String get localFilesSourceBadge => '本地文件';
+
+  @override
+  String get removeSource => '移除';
+
+  @override
+  String localFilesImported(int count) {
+    return '已导入 $count 个本地文件';
+  }
 }

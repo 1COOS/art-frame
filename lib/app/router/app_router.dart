@@ -2,14 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/adaptive_shell.dart';
-import '../../features/gallery/presentation/gallery_page.dart';
-import '../../features/home/presentation/home_page.dart';
+import '../../features/playback/presentation/playback_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
+import '../../features/sources/presentation/sources_page.dart';
 import 'app_destination.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppDestination.home.path,
+    initialLocation: AppDestination.sources.path,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -19,9 +19,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppDestination.home.path,
+                path: AppDestination.sources.path,
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: HomePage(),
+                  child: SourcesPage(),
                 ),
               ),
             ],
@@ -29,9 +29,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppDestination.gallery.path,
+                path: AppDestination.playback.path,
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: GalleryPage(),
+                  child: PlaybackPage(),
                 ),
               ),
             ],
@@ -51,7 +51,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
     redirect: (context, state) {
       if (state.matchedLocation == '/') {
-        return AppDestination.home.path;
+        return AppDestination.sources.path;
       }
       return null;
     },

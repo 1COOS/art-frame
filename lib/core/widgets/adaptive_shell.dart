@@ -27,14 +27,14 @@ class AdaptiveShell extends StatelessWidget {
         final l10n = AppLocalizations.of(context);
         final destinations = [
           _ShellDestination(
-            label: l10n.homeTab,
-            icon: Icons.home_outlined,
-            selectedIcon: Icons.home,
+            label: l10n.sourcesTab,
+            icon: Icons.folder_open_outlined,
+            selectedIcon: Icons.folder_open,
           ),
           _ShellDestination(
-            label: l10n.galleryTab,
-            icon: Icons.photo_library_outlined,
-            selectedIcon: Icons.photo_library,
+            label: l10n.playbackTab,
+            icon: Icons.slideshow_outlined,
+            selectedIcon: Icons.slideshow,
           ),
           _ShellDestination(
             label: l10n.settingsTab,

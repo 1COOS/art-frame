@@ -16,6 +16,8 @@ dependencies:
   flutter_riverpod: ^3.0.3
   riverpod_annotation: ^3.0.3
   intl: ^0.20.2
+  shared_preferences: ^2.5.3
+  file_selector: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -29,3 +31,8 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    - art-frame-gallery-phone.png
+    - art-frame-webserver-gallery-phone.png
+    - art-frame-webserver-wide.png
+    - art-frame-wide.png
