@@ -135,6 +135,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addLocalFilesSource => 'Add local files';
 
   @override
+  String get addLocalDirectorySource => 'Add local directory';
+
+  @override
   String get localFilesSourceTitle => 'Local files';
 
   @override
@@ -145,10 +148,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localFilesSourceBadge => 'Local files';
 
   @override
+  String get localDirectorySourceBadge => 'Local directory';
+
+  @override
   String get removeSource => 'Remove';
 
   @override
   String localFilesImported(int count) {
     return 'Imported $count local files';
+  }
+
+  @override
+  String localDirectoryImported(int count) {
+    return 'Imported $count images from the directory';
   }
 }

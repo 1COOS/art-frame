@@ -40,9 +40,11 @@
   "nextFrame": "Next",
   "previousFrame": "Previous",
   "addLocalFilesSource": "Add local files",
+  "addLocalDirectorySource": "Add local directory",
   "localFilesSourceTitle": "Local files",
   "localFilesSourceDescription": "Images picked from this device and stored as a reusable local source.",
   "localFilesSourceBadge": "Local files",
+  "localDirectorySourceBadge": "Local directory",
   "removeSource": "Remove",
   "@localFilesImported": {
     "placeholders": {
@@ -51,5 +53,13 @@
       }
     }
   },
-  "localFilesImported": "Imported {count} local files"
+  "localFilesImported": "Imported {count} local files",
+  "@localDirectoryImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localDirectoryImported": "Imported {count} images from the directory"
 }

@@ -18,6 +18,7 @@ void main() {
     expect(find.text('Local bundled sources'), findsOneWidget);
     expect(find.text('Foundation Gallery'), findsOneWidget);
     expect(find.text('Add local files'), findsOneWidget);
+    expect(find.text('Add local directory'), findsOneWidget);
 
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
@@ -35,6 +36,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('添加本地文件'), findsOneWidget);
+    expect(find.text('添加本地目录'), findsOneWidget);
 
     await tester.tap(find.text('打开播放'));
     await tester.pumpAndSettle();

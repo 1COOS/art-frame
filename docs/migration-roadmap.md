@@ -15,10 +15,10 @@
 | 5 | 高级播放能力 | 扩展 Fade / Slide / 缓存 / 更丰富展示能力 | Planned |
 
 ## 当前阶段
-- 当前 Phase：Phase 2 - 本地目录接入（规划中）
+- 当前 Phase：Phase 2 - 本地目录接入（实现中）
 - 当前 active OpenSpec change：`add-local-directory-sources`
 - Phase 1 收口状态：已完成 `localFiles` 图源实现、自动化验证与 Android 虚拟机手工验收
-- Phase 2 当前目标：定义目录选择、目录扫描、恢复与删除回收的最小可用闭环
+- Phase 2 当前目标：以静态快照方式完成目录选择、目录扫描、恢复与删除回收的最小可用闭环
 
 ## 阶段映射规则
 - 一个 Phase 对应一个主 OpenSpec change

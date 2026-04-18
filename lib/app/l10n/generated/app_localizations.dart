@@ -338,6 +338,12 @@ abstract class AppLocalizations {
   /// **'Add local files'**
   String get addLocalFilesSource;
 
+  /// No description provided for @addLocalDirectorySource.
+  ///
+  /// In en, this message translates to:
+  /// **'Add local directory'**
+  String get addLocalDirectorySource;
+
   /// No description provided for @localFilesSourceTitle.
   ///
   /// In en, this message translates to:
@@ -356,6 +362,12 @@ abstract class AppLocalizations {
   /// **'Local files'**
   String get localFilesSourceBadge;
 
+  /// No description provided for @localDirectorySourceBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Local directory'**
+  String get localDirectorySourceBadge;
+
   /// No description provided for @removeSource.
   ///
   /// In en, this message translates to:
@@ -367,6 +379,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Imported {count} local files'**
   String localFilesImported(int count);
+
+  /// No description provided for @localDirectoryImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} images from the directory'**
+  String localDirectoryImported(int count);
 }
 
 class _AppLocalizationsDelegate

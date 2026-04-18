@@ -8,11 +8,25 @@ import 'package:art_frame/features/sources/domain/media_item.dart';
 import 'package:art_frame/features/sources/domain/media_source.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('删除当前选中的本地图源后清理选中状态', () async {
     SharedPreferences.setMockInitialValues({});
 
     final container = ProviderContainer();
     addTearDown(container.dispose);
+    final localSourcesSub = container.listen(
+      localSourcesControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    final selectedSourceControllerSub = container.listen(
+      selectedSourceControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    addTearDown(localSourcesSub.close);
+    addTearDown(selectedSourceControllerSub.close);
 
     const localSource = MediaSource(
       id: 'picked-files',
@@ -42,6 +56,65 @@ void main() {
     expect(container.read(selectedSourceProvider)?.id, localSource.id);
 
     await container.read(localSourcesControllerProvider.notifier).remove(localSource.id);
+    await container.read(selectedSourceControllerProvider.notifier).clear();
+
+    expect(container.read(selectedSourceProvider), isNull);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('selected_source_id'), isNull);
+  });
+
+  test('删除当前选中的目录图源后清理选中状态', () async {
+    SharedPreferences.setMockInitialValues({});
+
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final localSourcesSub = container.listen(
+      localSourcesControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    final selectedSourceControllerSub = container.listen(
+      selectedSourceControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    addTearDown(localSourcesSub.close);
+    addTearDown(selectedSourceControllerSub.close);
+
+    const localDirectorySource = MediaSource(
+      id: 'local-directory-/mock/pictures',
+      title: 'pictures',
+      description: '/mock/pictures',
+      badge: 'Local directory',
+      kind: MediaSourceKind.localDirectory,
+      directoryPath: '/mock/pictures',
+      items: [
+        MediaItem(
+          id: '/mock/pictures/frame-1.jpg',
+          title: 'frame-1.jpg',
+          path: '/mock/pictures/frame-1.jpg',
+          description: '/mock/pictures/frame-1.jpg',
+          kind: MediaItemKind.file,
+        ),
+      ],
+    );
+
+    await container.read(localSourcesControllerProvider.future);
+    await container.read(selectedSourceControllerProvider.future);
+
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .upsert(localDirectorySource);
+    await container
+        .read(selectedSourceControllerProvider.notifier)
+        .select(localDirectorySource.id);
+
+    expect(container.read(selectedSourceProvider)?.id, localDirectorySource.id);
+
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .remove(localDirectorySource.id);
     await container.read(selectedSourceControllerProvider.notifier).clear();
 
     expect(container.read(selectedSourceProvider), isNull);

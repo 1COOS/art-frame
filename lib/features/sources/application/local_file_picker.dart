@@ -34,6 +34,10 @@ class LocalFilePicker {
         .toList(growable: false);
   }
 
+  Future<String?> pickDirectoryPath() async {
+    return getDirectoryPath(confirmButtonText: 'Import');
+  }
+
   String _basename(String path) {
     final segments = path.split(RegExp(r'[\\/]'));
     return segments.isEmpty ? path : segments.last;

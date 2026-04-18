@@ -34,7 +34,7 @@ final class LocalSourcesControllerProvider
 }
 
 String _$localSourcesControllerHash() =>
-    r'9a671b14dc8127d5195367094c6549ee9ed24074';
+    r'591870611728740e005b34a0016c9263ad355eaa';
 
 abstract class _$LocalSourcesController
     extends $AsyncNotifier<List<MediaSource>> {

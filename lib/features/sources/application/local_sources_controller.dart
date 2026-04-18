@@ -4,6 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../domain/media_item.dart';
 import '../domain/media_source.dart';
 import 'bundled_sources_provider.dart';
+import 'local_directory_scanner.dart';
+import 'local_security_scope_access.dart';
 import 'local_sources_repository.dart';
 
 part 'local_sources_controller.g.dart';
@@ -13,7 +15,9 @@ class LocalSourcesController extends _$LocalSourcesController {
   @override
   Future<List<MediaSource>> build() async {
     final repository = ref.watch(localSourcesRepositoryProvider);
-    return repository.load();
+    final sources = await repository.load();
+    await ref.read(localSecurityScopeAccessProvider).restoreAccess(sources);
+    return sources;
   }
 
   Future<MediaSource?> importItems(
@@ -35,6 +39,39 @@ class LocalSourcesController extends _$LocalSourcesController {
       items: items,
     );
 
+    await ref.read(localSecurityScopeAccessProvider).persistSourceAccess(source);
+    await upsert(source);
+    return source;
+  }
+
+  Future<MediaSource?> importDirectory(
+    String directoryPath, {
+    required String badge,
+  }) async {
+    final normalizedPath = _trimTrailingSeparators(directoryPath.trim());
+    if (normalizedPath.isEmpty) {
+      return null;
+    }
+
+    final items = await ref
+        .read(localDirectoryScannerProvider)
+        .scanImages(normalizedPath);
+    if (items.isEmpty) {
+      return null;
+    }
+
+    final directoryName = _basename(normalizedPath);
+    final source = MediaSource(
+      id: 'local-directory-$normalizedPath',
+      title: directoryName.isNotEmpty ? directoryName : normalizedPath,
+      description: normalizedPath,
+      badge: badge,
+      kind: MediaSourceKind.localDirectory,
+      directoryPath: normalizedPath,
+      items: items,
+    );
+
+    await ref.read(localSecurityScopeAccessProvider).persistSourceAccess(source);
     await upsert(source);
     return source;
   }
@@ -43,6 +80,7 @@ class LocalSourcesController extends _$LocalSourcesController {
     state = AsyncData(sources);
     final repository = ref.read(localSourcesRepositoryProvider);
     await repository.save(sources);
+    await ref.read(localSecurityScopeAccessProvider).syncSources(sources);
   }
 
   Future<void> remove(String sourceId) async {
@@ -63,6 +101,20 @@ class LocalSourcesController extends _$LocalSourcesController {
     ];
     await replaceAll(next);
   }
+
+  String _basename(String path) {
+    final segments = path.split(RegExp(r'[\\/]'));
+    return segments.isEmpty ? path : segments.last;
+  }
+
+  String _trimTrailingSeparators(String path) {
+    var result = path;
+    while (result.length > 1 &&
+        (result.endsWith('/') || result.endsWith('\\'))) {
+      result = result.substring(0, result.length - 1);
+    }
+    return result;
+  }
 }
 
 final allSourcesProvider = Provider<List<MediaSource>>((ref) {
@@ -72,3 +124,4 @@ final allSourcesProvider = Provider<List<MediaSource>>((ref) {
       const <MediaSource>[];
   return [...bundled, ...local];
 });
+

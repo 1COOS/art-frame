@@ -40,9 +40,11 @@
   "nextFrame": "下一张",
   "previousFrame": "上一张",
   "addLocalFilesSource": "添加本地文件",
+  "addLocalDirectorySource": "添加本地目录",
   "localFilesSourceTitle": "本地文件",
   "localFilesSourceDescription": "从当前设备选择图片，并保存为可复用的本地图源。",
   "localFilesSourceBadge": "本地文件",
+  "localDirectorySourceBadge": "本地目录",
   "removeSource": "移除",
   "@localFilesImported": {
     "placeholders": {
@@ -51,5 +53,13 @@
       }
     }
   },
-  "localFilesImported": "已导入 {count} 个本地文件"
+  "localFilesImported": "已导入 {count} 个本地文件",
+  "@localDirectoryImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localDirectoryImported": "已从目录导入 {count} 张图片"
 }

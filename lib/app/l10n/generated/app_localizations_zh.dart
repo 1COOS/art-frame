@@ -129,6 +129,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addLocalFilesSource => '添加本地文件';
 
   @override
+  String get addLocalDirectorySource => '添加本地目录';
+
+  @override
   String get localFilesSourceTitle => '本地文件';
 
   @override
@@ -138,10 +141,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get localFilesSourceBadge => '本地文件';
 
   @override
+  String get localDirectorySourceBadge => '本地目录';
+
+  @override
   String get removeSource => '移除';
 
   @override
   String localFilesImported(int count) {
     return '已导入 $count 个本地文件';
+  }
+
+  @override
+  String localDirectoryImported(int count) {
+    return '已从目录导入 $count 张图片';
   }
 }

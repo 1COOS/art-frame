@@ -32,7 +32,4 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
-    - art-frame-gallery-phone.png
-    - art-frame-webserver-gallery-phone.png
-    - art-frame-webserver-wide.png
-    - art-frame-wide.png
+    - assets/demo/

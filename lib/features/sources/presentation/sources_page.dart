@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +26,7 @@ class SourcesPage extends ConsumerWidget {
     final settings =
         ref.watch(playbackSettingsControllerProvider).asData?.value ??
         const PlaybackSettings.defaults();
+    final canImportDirectory = _supportsDirectoryImport();
 
     Future<void> pickLocalFiles() async {
       final items = await ref.read(localFilePickerProvider).pickImages();
@@ -51,13 +53,46 @@ class SourcesPage extends ConsumerWidget {
       }
     }
 
+    Future<void> pickLocalDirectory() async {
+      final directoryPath = await ref
+          .read(localFilePickerProvider)
+          .pickDirectoryPath();
+      if (directoryPath == null || directoryPath.isEmpty) {
+        return;
+      }
+
+      final source = await ref
+          .read(localSourcesControllerProvider.notifier)
+          .importDirectory(
+            directoryPath,
+            badge: l10n.localDirectorySourceBadge,
+          );
+      if (source == null || !context.mounted) {
+        return;
+      }
+
+      await ref.read(selectedSourceControllerProvider.notifier).select(source.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.localDirectoryImported(source.items.length)),
+          ),
+        );
+        context.go(AppDestination.playback.path);
+      }
+    }
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          crossAxisAlignment: WrapCrossAlignment.start,
           children: [
-            Expanded(
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -73,11 +108,23 @@ class SourcesPage extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 16),
-            FilledButton.icon(
-              onPressed: pickLocalFiles,
-              icon: const Icon(Icons.add_photo_alternate_outlined),
-              label: Text(l10n.addLocalFilesSource),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.end,
+              children: [
+                FilledButton.icon(
+                  onPressed: pickLocalFiles,
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  label: Text(l10n.addLocalFilesSource),
+                ),
+                if (canImportDirectory)
+                  FilledButton.tonalIcon(
+                    onPressed: pickLocalDirectory,
+                    icon: const Icon(Icons.folder_open_outlined),
+                    label: Text(l10n.addLocalDirectorySource),
+                  ),
+              ],
             ),
           ],
         ),
@@ -119,6 +166,20 @@ class SourcesPage extends ConsumerWidget {
           ),
       ],
     );
+  }
+
+  bool _supportsDirectoryImport() {
+    if (kIsWeb) {
+      return false;
+    }
+
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android ||
+      TargetPlatform.linux ||
+      TargetPlatform.macOS ||
+      TargetPlatform.windows => true,
+      TargetPlatform.iOS || TargetPlatform.fuchsia => false,
+    };
   }
 }
 
