@@ -26,6 +26,8 @@
 	<string>$(PRODUCT_COPYRIGHT)</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Art Frame 需要访问你的照片图库以导入媒体库图片。</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

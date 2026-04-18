@@ -11,8 +11,8 @@
   "languageLabel": "语言",
   "languageEnglish": "英文",
   "languageChinese": "中文",
-  "sourcesTitle": "内置本地图源",
-  "sourcesBody": "先用应用内置本地图片验证图源选择、持久化与播放流程，后续再接入设备文件选择。",
+  "sourcesTitle": "图源",
+  "sourcesBody": "统一管理内置、本地文件、本地目录与媒体库图源，并将其用于播放。",
   "playbackTitle": "播放页",
   "playbackBody": "当前选中的图源会自动轮播，也支持手动切换。",
   "settingsTitle": "播放设置",
@@ -41,10 +41,14 @@
   "previousFrame": "上一张",
   "addLocalFilesSource": "添加本地文件",
   "addLocalDirectorySource": "添加本地目录",
+  "addMediaLibrarySource": "添加媒体库",
   "localFilesSourceTitle": "本地文件",
   "localFilesSourceDescription": "从当前设备选择图片，并保存为可复用的本地图源。",
   "localFilesSourceBadge": "本地文件",
   "localDirectorySourceBadge": "本地目录",
+  "mediaLibrarySourceTitle": "媒体库",
+  "mediaLibrarySourceDescription": "从系统相册选择图片，并保存为可复用的本地图源。",
+  "mediaLibrarySourceBadge": "媒体库",
   "removeSource": "移除",
   "@localFilesImported": {
     "placeholders": {
@@ -61,5 +65,15 @@
       }
     }
   },
-  "localDirectoryImported": "已从目录导入 {count} 张图片"
+  "localDirectoryImported": "已从目录导入 {count} 张图片",
+  "@mediaLibraryImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mediaLibraryImported": "已从媒体库导入 {count} 张图片",
+  "mediaLibraryPermissionDenied": "未获得媒体库访问权限",
+  "mediaLibraryUnavailable": "当前平台不支持媒体库导入"
 }

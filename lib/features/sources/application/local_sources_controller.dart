@@ -39,7 +39,9 @@ class LocalSourcesController extends _$LocalSourcesController {
       items: items,
     );
 
-    await ref.read(localSecurityScopeAccessProvider).persistSourceAccess(source);
+    await ref
+        .read(localSecurityScopeAccessProvider)
+        .persistSourceAccess(source);
     await upsert(source);
     return source;
   }
@@ -71,7 +73,32 @@ class LocalSourcesController extends _$LocalSourcesController {
       items: items,
     );
 
-    await ref.read(localSecurityScopeAccessProvider).persistSourceAccess(source);
+    await ref
+        .read(localSecurityScopeAccessProvider)
+        .persistSourceAccess(source);
+    await upsert(source);
+    return source;
+  }
+
+  Future<MediaSource?> importMediaLibraryItems(
+    List<MediaItem> items, {
+    required String title,
+    required String description,
+    required String badge,
+  }) async {
+    if (items.isEmpty) {
+      return null;
+    }
+
+    final source = MediaSource(
+      id: 'media-library-${DateTime.now().microsecondsSinceEpoch}',
+      title: title,
+      description: description,
+      badge: badge,
+      kind: MediaSourceKind.mediaLibrary,
+      items: items,
+    );
+
     await upsert(source);
     return source;
   }
@@ -124,4 +151,3 @@ final allSourcesProvider = Provider<List<MediaSource>>((ref) {
       const <MediaSource>[];
   return [...bundled, ...local];
 });
-

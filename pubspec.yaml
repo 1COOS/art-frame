@@ -18,6 +18,9 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.5.3
   file_selector: ^1.1.0
+  photo_manager: ^3.8.0
+  photo_manager_image_provider: ^2.2.0
+  wechat_assets_picker: ^9.5.1
 
 dev_dependencies:
   flutter_test:

@@ -42,10 +42,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageChinese => '中文';
 
   @override
-  String get sourcesTitle => '内置本地图源';
+  String get sourcesTitle => '图源';
 
   @override
-  String get sourcesBody => '先用应用内置本地图片验证图源选择、持久化与播放流程，后续再接入设备文件选择。';
+  String get sourcesBody => '统一管理内置、本地文件、本地目录与媒体库图源，并将其用于播放。';
 
   @override
   String get playbackTitle => '播放页';
@@ -132,6 +132,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addLocalDirectorySource => '添加本地目录';
 
   @override
+  String get addMediaLibrarySource => '添加媒体库';
+
+  @override
   String get localFilesSourceTitle => '本地文件';
 
   @override
@@ -142,6 +145,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get localDirectorySourceBadge => '本地目录';
+
+  @override
+  String get mediaLibrarySourceTitle => '媒体库';
+
+  @override
+  String get mediaLibrarySourceDescription => '从系统相册选择图片，并保存为可复用的本地图源。';
+
+  @override
+  String get mediaLibrarySourceBadge => '媒体库';
 
   @override
   String get removeSource => '移除';
@@ -155,4 +167,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String localDirectoryImported(int count) {
     return '已从目录导入 $count 张图片';
   }
+
+  @override
+  String mediaLibraryImported(int count) {
+    return '已从媒体库导入 $count 张图片';
+  }
+
+  @override
+  String get mediaLibraryPermissionDenied => '未获得媒体库访问权限';
+
+  @override
+  String get mediaLibraryUnavailable => '当前平台不支持媒体库导入';
 }

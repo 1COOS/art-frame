@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum MediaItemKind { asset, file }
+enum MediaItemKind { asset, file, mediaAsset }
 
 @immutable
 class MediaItem {

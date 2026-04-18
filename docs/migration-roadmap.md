@@ -9,16 +9,16 @@
 | --- | --- | --- | --- |
 | 0 | 最小闭环基础 | 打通 `sources / playback / settings`、内置图源、播放设置与基础验证 | Done |
 | 1 | 真实本地文件接入 | 支持 `localFiles` 图源、真实文件播放与持久化恢复 | Done |
-| 2 | 本地目录接入 | 支持 `localDirectory` 图源与目录型媒体集合 | In Progress |
-| 3 | 相册 / 媒体库接入 | 支持系统媒体库选择与媒体资产导入 | Planned |
+| 2 | 本地目录接入 | 支持 `localDirectory` 图源与目录型媒体集合 | Done |
+| 3 | 相册 / 媒体库接入 | 支持系统媒体库选择与媒体资产导入 | In Progress |
 | 4 | 网络图源接入 | 逐步接入 WebDAV / SMB / SFTP 等远程 source | Planned |
 | 5 | 高级播放能力 | 扩展 Fade / Slide / 缓存 / 更丰富展示能力 | Planned |
 
 ## 当前阶段
-- 当前 Phase：Phase 2 - 本地目录接入（实现中）
-- 当前 active OpenSpec change：`add-local-directory-sources`
-- Phase 1 收口状态：已完成 `localFiles` 图源实现、自动化验证与 Android 虚拟机手工验收
-- Phase 2 当前目标：以静态快照方式完成目录选择、目录扫描、恢复与删除回收的最小可用闭环
+- 当前 Phase：Phase 3 - 相册 / 媒体库接入（实现中）
+- 当前 active OpenSpec change：`add-media-library-sources`
+- Phase 2 收口状态：已完成 `localDirectory` 图源实现、自动化验证与 macOS 手工验收
+- Phase 3 当前目标：以最小闭环方式完成 Android / iOS 媒体库授权、图片选择、恢复、删除回收与 Playback 展示
 
 ## 阶段映射规则
 - 一个 Phase 对应一个主 OpenSpec change
@@ -29,15 +29,17 @@
   - 对应 OpenSpec `tasks.md`
 
 ## 当前阶段边界
-### Phase 2 当前要做
-- 在 Sources 页增加目录选择入口
-- 生成 `MediaSourceKind.localDirectory`
-- 保存 `directoryPath` 与扫描到的图片条目
-- 让目录型图源进入现有 Playback 闭环
+### Phase 3 当前要做
+- 在 Sources 页增加 Android / iOS 的系统媒体库 / 相册导入入口
+- 生成 `MediaSourceKind.mediaLibrary`
+- 保存稳定资产标识与最小展示元数据
+- 让媒体库图源进入现有 Playback 闭环
+- 处理权限拒绝、取消选择与失效资产的最小语义
 
-### Phase 2 当前不做
-- 目录监听与自动刷新
-- 相册 / 媒体库
-- 视频 / GIF
+### Phase 3 当前不做
+- 视频 / GIF / Live Photo 特殊处理
+- 智能相册、系统相册分组浏览与搜索筛选
+- 媒体库监听、自动刷新与增量同步
+- macOS 媒体库导入入口与权限流（当前阶段暂不开放）
 - 远程协议图源
 - 高级缓存、EXIF、排序与同步

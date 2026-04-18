@@ -77,4 +77,35 @@ void main() {
     expect(restored.first.items.single.title, 'photo-1.jpg');
     expect(restored.first.items.single.kind, MediaItemKind.file);
   });
+
+  test('本地图源仓储可保存并恢复 mediaLibrary 图源', () async {
+    SharedPreferences.setMockInitialValues({});
+    const repository = LocalSourcesRepository();
+
+    const source = MediaSource(
+      id: 'media-library-1',
+      title: 'Media library',
+      description: 'Images selected from the system photo library.',
+      badge: 'Media library',
+      kind: MediaSourceKind.mediaLibrary,
+      items: [
+        MediaItem(
+          id: 'asset-001',
+          title: 'IMG_0001.JPG',
+          path: 'asset-001',
+          description: 'IMG_0001.JPG',
+          kind: MediaItemKind.mediaAsset,
+        ),
+      ],
+    );
+
+    await repository.save(const [source]);
+    final restored = await repository.load();
+
+    expect(restored, hasLength(1));
+    expect(restored.first.kind, MediaSourceKind.mediaLibrary);
+    expect(restored.first.directoryPath, isNull);
+    expect(restored.first.items.single.kind, MediaItemKind.mediaAsset);
+    expect(restored.first.items.single.path, 'asset-001');
+  });
 }

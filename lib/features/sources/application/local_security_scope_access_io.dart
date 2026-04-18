@@ -42,7 +42,9 @@ Future<void> syncSources(List<MediaSource> sources) async {
 
 Future<void> _invoke(String method, List<String> paths) async {
   try {
-    await _channel.invokeMethod<void>(method, <String, Object?>{'paths': paths});
+    await _channel.invokeMethod<void>(method, <String, Object?>{
+      'paths': paths,
+    });
   } on MissingPluginException {
     return;
   }
@@ -61,7 +63,7 @@ List<String> _pathsForSource(MediaSource source) {
       for (final item in source.items)
         if (item.path.isNotEmpty) item.path,
     ],
-    MediaSourceKind.bundled => const <String>[],
+    MediaSourceKind.mediaLibrary || MediaSourceKind.bundled => const <String>[],
   };
 }
 

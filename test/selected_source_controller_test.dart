@@ -48,14 +48,18 @@ void main() {
     await container.read(localSourcesControllerProvider.future);
     await container.read(selectedSourceControllerProvider.future);
 
-    await container.read(localSourcesControllerProvider.notifier).upsert(localSource);
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .upsert(localSource);
     await container
         .read(selectedSourceControllerProvider.notifier)
         .select(localSource.id);
 
     expect(container.read(selectedSourceProvider)?.id, localSource.id);
 
-    await container.read(localSourcesControllerProvider.notifier).remove(localSource.id);
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .remove(localSource.id);
     await container.read(selectedSourceControllerProvider.notifier).clear();
 
     expect(container.read(selectedSourceProvider), isNull);
@@ -115,6 +119,64 @@ void main() {
     await container
         .read(localSourcesControllerProvider.notifier)
         .remove(localDirectorySource.id);
+    await container.read(selectedSourceControllerProvider.notifier).clear();
+
+    expect(container.read(selectedSourceProvider), isNull);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('selected_source_id'), isNull);
+  });
+
+  test('删除当前选中的媒体库图源后清理选中状态', () async {
+    SharedPreferences.setMockInitialValues({});
+
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final localSourcesSub = container.listen(
+      localSourcesControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    final selectedSourceControllerSub = container.listen(
+      selectedSourceControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    addTearDown(localSourcesSub.close);
+    addTearDown(selectedSourceControllerSub.close);
+
+    const mediaLibrarySource = MediaSource(
+      id: 'media-library-1',
+      title: 'Media library',
+      description: 'Images selected from the system photo library.',
+      badge: 'Media library',
+      kind: MediaSourceKind.mediaLibrary,
+      items: [
+        MediaItem(
+          id: 'asset-001',
+          title: 'IMG_0001.JPG',
+          path: 'asset-001',
+          description: 'IMG_0001.JPG',
+          kind: MediaItemKind.mediaAsset,
+        ),
+      ],
+    );
+
+    await container.read(localSourcesControllerProvider.future);
+    await container.read(selectedSourceControllerProvider.future);
+
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .upsert(mediaLibrarySource);
+    await container
+        .read(selectedSourceControllerProvider.notifier)
+        .select(mediaLibrarySource.id);
+
+    expect(container.read(selectedSourceProvider)?.id, mediaLibrarySource.id);
+
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .remove(mediaLibrarySource.id);
     await container.read(selectedSourceControllerProvider.notifier).clear();
 
     expect(container.read(selectedSourceProvider), isNull);

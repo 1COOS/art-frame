@@ -11,8 +11,8 @@
   "languageLabel": "Language",
   "languageEnglish": "English",
   "languageChinese": "Chinese",
-  "sourcesTitle": "Local bundled sources",
-  "sourcesBody": "Start with bundled local images to validate source selection, persistence, and playback flow before adding device pickers.",
+  "sourcesTitle": "Sources",
+  "sourcesBody": "Manage bundled, local file, local directory, and media library sources for playback.",
   "playbackTitle": "Playback",
   "playbackBody": "The selected source rotates automatically and can be manually browsed.",
   "settingsTitle": "Playback settings",
@@ -41,10 +41,14 @@
   "previousFrame": "Previous",
   "addLocalFilesSource": "Add local files",
   "addLocalDirectorySource": "Add local directory",
+  "addMediaLibrarySource": "Add media library",
   "localFilesSourceTitle": "Local files",
   "localFilesSourceDescription": "Images picked from this device and stored as a reusable local source.",
   "localFilesSourceBadge": "Local files",
   "localDirectorySourceBadge": "Local directory",
+  "mediaLibrarySourceTitle": "Media library",
+  "mediaLibrarySourceDescription": "Images selected from the system photo library and stored as a reusable local source.",
+  "mediaLibrarySourceBadge": "Media library",
   "removeSource": "Remove",
   "@localFilesImported": {
     "placeholders": {
@@ -61,5 +65,15 @@
       }
     }
   },
-  "localDirectoryImported": "Imported {count} images from the directory"
+  "localDirectoryImported": "Imported {count} images from the directory",
+  "@mediaLibraryImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mediaLibraryImported": "Imported {count} images from the media library",
+  "mediaLibraryPermissionDenied": "Media library access was not granted",
+  "mediaLibraryUnavailable": "Media library import is not available on this platform"
 }

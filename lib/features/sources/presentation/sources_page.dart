@@ -6,10 +6,13 @@ import 'package:go_router/go_router.dart';
 import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../app/router/app_destination.dart';
 import '../../../core/widgets/local_image.dart';
+import '../../../core/widgets/media_asset_image.dart';
 import '../../settings/application/playback_settings.dart';
 import '../../settings/application/playback_settings_controller.dart';
 import '../application/local_file_picker.dart';
 import '../application/local_sources_controller.dart';
+import '../application/media_library_picker.dart';
+import '../application/media_library_picker_result.dart';
 import '../application/selected_source_controller.dart';
 import '../domain/media_item.dart';
 import '../domain/media_source.dart';
@@ -21,12 +24,17 @@ class SourcesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final sources = ref.watch(allSourcesProvider);
-    final selectedId =
-        ref.watch(selectedSourceControllerProvider).asData?.value;
+    final selectedId = ref
+        .watch(selectedSourceControllerProvider)
+        .asData
+        ?.value;
     final settings =
         ref.watch(playbackSettingsControllerProvider).asData?.value ??
         const PlaybackSettings.defaults();
     final canImportDirectory = _supportsDirectoryImport();
+    final canImportMediaLibrary = ref
+        .read(mediaLibraryPickerProvider)
+        .isSupported;
 
     Future<void> pickLocalFiles() async {
       final items = await ref.read(localFilePickerProvider).pickImages();
@@ -43,7 +51,9 @@ class SourcesPage extends ConsumerWidget {
         return;
       }
 
-      await ref.read(selectedSourceControllerProvider.notifier).select(source.id);
+      await ref
+          .read(selectedSourceControllerProvider.notifier)
+          .select(source.id);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -71,7 +81,9 @@ class SourcesPage extends ConsumerWidget {
         return;
       }
 
-      await ref.read(selectedSourceControllerProvider.notifier).select(source.id);
+      await ref
+          .read(selectedSourceControllerProvider.notifier)
+          .select(source.id);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,6 +92,53 @@ class SourcesPage extends ConsumerWidget {
           ),
         );
         context.go(AppDestination.playback.path);
+      }
+    }
+
+    Future<void> pickMediaLibrary() async {
+      final result = await ref
+          .read(mediaLibraryPickerProvider)
+          .pickImages(context);
+      if (!context.mounted) {
+        return;
+      }
+
+      switch (result.status) {
+        case MediaLibraryPickStatus.success:
+          final source = await ref
+              .read(localSourcesControllerProvider.notifier)
+              .importMediaLibraryItems(
+                result.items,
+                title: l10n.mediaLibrarySourceTitle,
+                description: l10n.mediaLibrarySourceDescription,
+                badge: l10n.mediaLibrarySourceBadge,
+              );
+          if (source == null || !context.mounted) {
+            return;
+          }
+
+          await ref
+              .read(selectedSourceControllerProvider.notifier)
+              .select(source.id);
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.mediaLibraryImported(result.items.length)),
+              ),
+            );
+            context.go(AppDestination.playback.path);
+          }
+        case MediaLibraryPickStatus.permissionDenied:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.mediaLibraryPermissionDenied)),
+          );
+        case MediaLibraryPickStatus.unsupported:
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.mediaLibraryUnavailable)));
+        case MediaLibraryPickStatus.cancelled || MediaLibraryPickStatus.empty:
+          return;
       }
     }
 
@@ -123,6 +182,12 @@ class SourcesPage extends ConsumerWidget {
                     onPressed: pickLocalDirectory,
                     icon: const Icon(Icons.folder_open_outlined),
                     label: Text(l10n.addLocalDirectorySource),
+                  ),
+                if (canImportMediaLibrary)
+                  FilledButton.tonalIcon(
+                    onPressed: pickMediaLibrary,
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: Text(l10n.addMediaLibrarySource),
                   ),
               ],
             ),
@@ -246,7 +311,10 @@ class _SourceCard extends StatelessWidget {
                             ),
                           if (onRemove != null)
                             ActionChip(
-                              avatar: const Icon(Icons.delete_outline, size: 18),
+                              avatar: const Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                              ),
                               label: Text(l10n.removeSource),
                               onPressed: onRemove,
                             ),
@@ -309,6 +377,10 @@ class _SourcePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     if (item.kind == MediaItemKind.file) {
       return buildLocalImage(item.path, width: 132, height: 92);
+    }
+
+    if (item.kind == MediaItemKind.mediaAsset) {
+      return buildMediaAssetImage(item.path, width: 132, height: 92);
     }
 
     return Image.asset(

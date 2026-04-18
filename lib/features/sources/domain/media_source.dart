@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'media_item.dart';
 
-enum MediaSourceKind { bundled, localDirectory, localFiles }
+enum MediaSourceKind { bundled, localDirectory, localFiles, mediaLibrary }
 
 @immutable
 class MediaSource {

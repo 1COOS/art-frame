@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../app/router/app_destination.dart';
 import '../../../core/widgets/local_image.dart';
+import '../../../core/widgets/media_asset_image.dart';
 import '../../settings/application/playback_settings.dart';
 import '../../settings/application/playback_settings_controller.dart';
 import '../../sources/application/selected_source_controller.dart';
@@ -120,17 +121,13 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
                         children: [
                           Text(
                             currentItem.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
+                            style: Theme.of(context).textTheme.headlineSmall
                                 ?.copyWith(color: Colors.white),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             currentItem.description,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: Colors.white),
                           ),
                         ],
@@ -204,18 +201,15 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
       return;
     }
 
-    _timer = Timer.periodic(
-      Duration(seconds: settings.intervalSeconds),
-      (_) {
-        if (!mounted) {
-          return;
-        }
+    _timer = Timer.periodic(Duration(seconds: settings.intervalSeconds), (_) {
+      if (!mounted) {
+        return;
+      }
 
-        setState(() {
-          _currentIndex = (_currentIndex + 1) % source.items.length;
-        });
-      },
-    );
+      setState(() {
+        _currentIndex = (_currentIndex + 1) % source.items.length;
+      });
+    });
   }
 
   void _showNext() {
@@ -236,8 +230,8 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
     }
 
     setState(() {
-      _currentIndex = (_currentIndex - 1 + source.items.length) %
-          source.items.length;
+      _currentIndex =
+          (_currentIndex - 1 + source.items.length) % source.items.length;
     });
   }
 }
@@ -251,6 +245,10 @@ class _PlaybackFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     if (item.kind == MediaItemKind.file) {
       return buildLocalImage(item.path);
+    }
+
+    if (item.kind == MediaItemKind.mediaAsset) {
+      return buildMediaAssetImage(item.path, isOriginal: true);
     }
 
     return Image.asset(item.assetPath, fit: BoxFit.cover);

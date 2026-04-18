@@ -43,11 +43,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageChinese => 'Chinese';
 
   @override
-  String get sourcesTitle => 'Local bundled sources';
+  String get sourcesTitle => 'Sources';
 
   @override
   String get sourcesBody =>
-      'Start with bundled local images to validate source selection, persistence, and playback flow before adding device pickers.';
+      'Manage bundled, local file, local directory, and media library sources for playback.';
 
   @override
   String get playbackTitle => 'Playback';
@@ -138,6 +138,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addLocalDirectorySource => 'Add local directory';
 
   @override
+  String get addMediaLibrarySource => 'Add media library';
+
+  @override
   String get localFilesSourceTitle => 'Local files';
 
   @override
@@ -151,6 +154,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localDirectorySourceBadge => 'Local directory';
 
   @override
+  String get mediaLibrarySourceTitle => 'Media library';
+
+  @override
+  String get mediaLibrarySourceDescription =>
+      'Images selected from the system photo library and stored as a reusable local source.';
+
+  @override
+  String get mediaLibrarySourceBadge => 'Media library';
+
+  @override
   String get removeSource => 'Remove';
 
   @override
@@ -162,4 +175,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String localDirectoryImported(int count) {
     return 'Imported $count images from the directory';
   }
+
+  @override
+  String mediaLibraryImported(int count) {
+    return 'Imported $count images from the media library';
+  }
+
+  @override
+  String get mediaLibraryPermissionDenied =>
+      'Media library access was not granted';
+
+  @override
+  String get mediaLibraryUnavailable =>
+      'Media library import is not available on this platform';
 }

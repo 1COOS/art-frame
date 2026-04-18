@@ -8,17 +8,13 @@ void main() {
   testWidgets('启动最小图源与播放闭环', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
 
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: ArtFrameBootstrapApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: ArtFrameBootstrapApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Local bundled sources'), findsOneWidget);
     expect(find.text('Foundation Gallery'), findsOneWidget);
     expect(find.text('Add local files'), findsOneWidget);
     expect(find.text('Add local directory'), findsOneWidget);
+    expect(find.text('Add media library'), findsOneWidget);
 
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
@@ -37,6 +33,7 @@ void main() {
 
     expect(find.text('添加本地文件'), findsOneWidget);
     expect(find.text('添加本地目录'), findsOneWidget);
+    expect(find.text('添加媒体库'), findsOneWidget);
 
     await tester.tap(find.text('打开播放'));
     await tester.pumpAndSettle();

@@ -167,13 +167,13 @@ abstract class AppLocalizations {
   /// No description provided for @sourcesTitle.
   ///
   /// In en, this message translates to:
-  /// **'Local bundled sources'**
+  /// **'Sources'**
   String get sourcesTitle;
 
   /// No description provided for @sourcesBody.
   ///
   /// In en, this message translates to:
-  /// **'Start with bundled local images to validate source selection, persistence, and playback flow before adding device pickers.'**
+  /// **'Manage bundled, local file, local directory, and media library sources for playback.'**
   String get sourcesBody;
 
   /// No description provided for @playbackTitle.
@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'Add local directory'**
   String get addLocalDirectorySource;
 
+  /// No description provided for @addMediaLibrarySource.
+  ///
+  /// In en, this message translates to:
+  /// **'Add media library'**
+  String get addMediaLibrarySource;
+
   /// No description provided for @localFilesSourceTitle.
   ///
   /// In en, this message translates to:
@@ -368,6 +374,24 @@ abstract class AppLocalizations {
   /// **'Local directory'**
   String get localDirectorySourceBadge;
 
+  /// No description provided for @mediaLibrarySourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Media library'**
+  String get mediaLibrarySourceTitle;
+
+  /// No description provided for @mediaLibrarySourceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Images selected from the system photo library and stored as a reusable local source.'**
+  String get mediaLibrarySourceDescription;
+
+  /// No description provided for @mediaLibrarySourceBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Media library'**
+  String get mediaLibrarySourceBadge;
+
   /// No description provided for @removeSource.
   ///
   /// In en, this message translates to:
@@ -385,6 +409,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Imported {count} images from the directory'**
   String localDirectoryImported(int count);
+
+  /// No description provided for @mediaLibraryImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} images from the media library'**
+  String mediaLibraryImported(int count);
+
+  /// No description provided for @mediaLibraryPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Media library access was not granted'**
+  String get mediaLibraryPermissionDenied;
+
+  /// No description provided for @mediaLibraryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Media library import is not available on this platform'**
+  String get mediaLibraryUnavailable;
 }
 
 class _AppLocalizationsDelegate
