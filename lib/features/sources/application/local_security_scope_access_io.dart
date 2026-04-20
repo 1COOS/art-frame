@@ -63,7 +63,9 @@ List<String> _pathsForSource(MediaSource source) {
       for (final item in source.items)
         if (item.path.isNotEmpty) item.path,
     ],
-    MediaSourceKind.mediaLibrary || MediaSourceKind.bundled => const <String>[],
+    MediaSourceKind.mediaLibrary ||
+    MediaSourceKind.bundled ||
+    MediaSourceKind.network => const <String>[],
   };
 }
 

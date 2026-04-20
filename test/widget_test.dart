@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +16,7 @@ void main() {
     expect(find.text('Add local files'), findsOneWidget);
     expect(find.text('Add local directory'), findsOneWidget);
     expect(find.text('Add media library'), findsOneWidget);
+    expect(find.text('Add network source'), findsOneWidget);
 
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
@@ -34,11 +36,18 @@ void main() {
     expect(find.text('添加本地文件'), findsOneWidget);
     expect(find.text('添加本地目录'), findsOneWidget);
     expect(find.text('添加媒体库'), findsOneWidget);
+    expect(find.text('添加网络图源'), findsOneWidget);
 
     await tester.tap(find.text('打开播放'));
     await tester.pumpAndSettle();
 
-    expect(find.text('播放页'), findsOneWidget);
     expect(find.text('Foundation Gallery'), findsOneWidget);
+    expect(find.text('当前图源'), findsOneWidget);
+    expect(find.text('上一张'), findsOneWidget);
+    expect(find.text('下一张'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.text('设置'), findsNothing);
+    expect(find.text('播放设置'), findsNothing);
   });
 }

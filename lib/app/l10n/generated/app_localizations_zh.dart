@@ -45,7 +45,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourcesTitle => '图源';
 
   @override
-  String get sourcesBody => '统一管理内置、本地文件、本地目录与媒体库图源，并将其用于播放。';
+  String get sourcesBody => '统一管理内置、本地文件、本地目录、媒体库与网络图源，并将其用于播放。';
 
   @override
   String get playbackTitle => '播放页';
@@ -135,6 +135,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addMediaLibrarySource => '添加媒体库';
 
   @override
+  String get addNetworkSource => '添加网络图源';
+
+  @override
   String get localFilesSourceTitle => '本地文件';
 
   @override
@@ -156,6 +159,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mediaLibrarySourceBadge => '媒体库';
 
   @override
+  String get networkSourceTitle => '网络图源';
+
+  @override
+  String get networkSourceDescription => '基于远程协议配置生成的可复用占位图源。';
+
+  @override
+  String get networkSourceBadge => '网络图源';
+
+  @override
+  String get networkSourceUnavailable => '当前平台不支持网络图源导入';
+
+  @override
   String get removeSource => '移除';
 
   @override
@@ -171,6 +186,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String mediaLibraryImported(int count) {
     return '已从媒体库导入 $count 张图片';
+  }
+
+  @override
+  String networkSourceImported(int count) {
+    return '已从网络图源导入 $count 张图片';
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:art_frame/features/sources/application/local_sources_repository.dart';
 import 'package:art_frame/features/sources/domain/media_item.dart';
 import 'package:art_frame/features/sources/domain/media_source.dart';
+import 'package:art_frame/features/sources/domain/network_source_config.dart';
 
 void main() {
   test('本地图源仓储可保存并恢复目录与文件列表', () async {
@@ -107,5 +108,45 @@ void main() {
     expect(restored.first.directoryPath, isNull);
     expect(restored.first.items.single.kind, MediaItemKind.mediaAsset);
     expect(restored.first.items.single.path, 'asset-001');
+  });
+
+  test('本地图源仓储可保存并恢复 network 图源', () async {
+    SharedPreferences.setMockInitialValues({});
+    const repository = LocalSourcesRepository();
+
+    const source = MediaSource(
+      id: 'network-webdav:https:demo.local::/gallery:demo',
+      title: 'Network source',
+      description: 'demo.local/gallery',
+      badge: 'Network source',
+      kind: MediaSourceKind.network,
+      networkConfig: NetworkSourceConfig(
+        protocol: NetworkSourceProtocol.webdav,
+        host: 'demo.local',
+        remotePath: '/gallery',
+        secure: true,
+        username: 'demo',
+        displayName: 'WebDAV Demo',
+      ),
+      items: [
+        MediaItem(
+          id: 'network-demo-item-1',
+          title: 'Remote placeholder',
+          path: 'https://demo.local/gallery/frame-1.jpg',
+          description: '/gallery/frame-1.jpg',
+          kind: MediaItemKind.remote,
+        ),
+      ],
+    );
+
+    await repository.save(const [source]);
+    final restored = await repository.load();
+
+    expect(restored, hasLength(1));
+    expect(restored.first.kind, MediaSourceKind.network);
+    expect(restored.first.networkConfig?.protocol, NetworkSourceProtocol.webdav);
+    expect(restored.first.networkConfig?.host, 'demo.local');
+    expect(restored.first.networkConfig?.remotePath, '/gallery');
+    expect(restored.first.items.single.kind, MediaItemKind.remote);
   });
 }

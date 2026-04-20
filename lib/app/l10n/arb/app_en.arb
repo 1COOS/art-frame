@@ -12,7 +12,7 @@
   "languageEnglish": "English",
   "languageChinese": "Chinese",
   "sourcesTitle": "Sources",
-  "sourcesBody": "Manage bundled, local file, local directory, and media library sources for playback.",
+  "sourcesBody": "Manage bundled, local file, local directory, media library, and network sources for playback.",
   "playbackTitle": "Playback",
   "playbackBody": "The selected source rotates automatically and can be manually browsed.",
   "settingsTitle": "Playback settings",
@@ -42,6 +42,7 @@
   "addLocalFilesSource": "Add local files",
   "addLocalDirectorySource": "Add local directory",
   "addMediaLibrarySource": "Add media library",
+  "addNetworkSource": "Add network source",
   "localFilesSourceTitle": "Local files",
   "localFilesSourceDescription": "Images picked from this device and stored as a reusable local source.",
   "localFilesSourceBadge": "Local files",
@@ -49,6 +50,10 @@
   "mediaLibrarySourceTitle": "Media library",
   "mediaLibrarySourceDescription": "Images selected from the system photo library and stored as a reusable local source.",
   "mediaLibrarySourceBadge": "Media library",
+  "networkSourceTitle": "Network source",
+  "networkSourceDescription": "A reusable placeholder source backed by a remote protocol configuration.",
+  "networkSourceBadge": "Network source",
+  "networkSourceUnavailable": "Network source import is not available on this platform",
   "removeSource": "Remove",
   "@localFilesImported": {
     "placeholders": {
@@ -74,6 +79,14 @@
     }
   },
   "mediaLibraryImported": "Imported {count} images from the media library",
+  "@networkSourceImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkSourceImported": "Imported {count} images from the network source",
   "mediaLibraryPermissionDenied": "Media library access was not granted",
   "mediaLibraryUnavailable": "Media library import is not available on this platform"
 }

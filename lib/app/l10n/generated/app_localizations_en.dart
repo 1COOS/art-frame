@@ -47,7 +47,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sourcesBody =>
-      'Manage bundled, local file, local directory, and media library sources for playback.';
+      'Manage bundled, local file, local directory, media library, and network sources for playback.';
 
   @override
   String get playbackTitle => 'Playback';
@@ -141,6 +141,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addMediaLibrarySource => 'Add media library';
 
   @override
+  String get addNetworkSource => 'Add network source';
+
+  @override
   String get localFilesSourceTitle => 'Local files';
 
   @override
@@ -164,6 +167,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mediaLibrarySourceBadge => 'Media library';
 
   @override
+  String get networkSourceTitle => 'Network source';
+
+  @override
+  String get networkSourceDescription =>
+      'A reusable placeholder source backed by a remote protocol configuration.';
+
+  @override
+  String get networkSourceBadge => 'Network source';
+
+  @override
+  String get networkSourceUnavailable =>
+      'Network source import is not available on this platform';
+
+  @override
   String get removeSource => 'Remove';
 
   @override
@@ -179,6 +196,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String mediaLibraryImported(int count) {
     return 'Imported $count images from the media library';
+  }
+
+  @override
+  String networkSourceImported(int count) {
+    return 'Imported $count images from the network source';
   }
 
   @override

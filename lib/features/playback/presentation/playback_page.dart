@@ -47,28 +47,32 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
       _timer = null;
       _timerKey = null;
 
-      return Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.playbackEmptyTitle,
-                    style: Theme.of(context).textTheme.headlineSmall,
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.playbackEmptyTitle,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(l10n.playbackEmptyBody),
+                      const SizedBox(height: 20),
+                      FilledButton(
+                        onPressed: () => context.go(AppDestination.sources.path),
+                        child: Text(l10n.goToSources),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(l10n.playbackEmptyBody),
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: () => context.go(AppDestination.sources.path),
-                    child: Text(l10n.goToSources),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -79,99 +83,108 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
     final normalizedIndex = _normalizeIndex(source.items.length);
     final currentItem = source.items[normalizedIndex];
 
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        Text(
-          l10n.playbackTitle,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 12),
-        Text(l10n.playbackBody, style: Theme.of(context).textTheme.bodyLarge),
-        const SizedBox(height: 24),
-        Card(
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    _PlaybackFrame(item: currentItem),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.62),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            currentItem.title,
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(color: Colors.white),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            currentItem.description,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _PlaybackFrame(
+              item: currentItem,
+              headers:
+                  source.networkConfig?.authorizationHeaders ??
+                  const <String, String>{},
+            ),
+            DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xB3000000),
+                    Colors.transparent,
+                    Colors.transparent,
+                    Color(0xB3000000),
                   ],
+                  stops: [0, 0.22, 0.7, 1],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    _PlaybackMeta(
-                      label: l10n.selectedSourceLabel,
-                      value: source.title,
-                    ),
-                    _PlaybackMeta(
-                      label: l10n.itemsCountLabel,
-                      value: '${source.items.length}',
-                    ),
-                    _PlaybackMeta(
-                      label: l10n.intervalLabel,
-                      value: '${settings.intervalSeconds}${l10n.secondsUnit}',
-                    ),
-                    FilledButton.tonalIcon(
-                      onPressed: _showPrevious,
-                      icon: const Icon(Icons.chevron_left),
-                      label: Text(l10n.previousFrame),
-                    ),
-                    FilledButton.icon(
-                      onPressed: _showNext,
-                      icon: const Icon(Icons.chevron_right),
-                      label: Text(l10n.nextFrame),
-                    ),
-                  ],
-                ),
+            ),
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Row(
+                children: [
+                  FilledButton.tonalIcon(
+                    onPressed: () => context.go(AppDestination.sources.path),
+                    icon: const Icon(Icons.arrow_back),
+                    label: Text(l10n.goToSources),
+                  ),
+                  const Spacer(),
+                  _OverlayBadge(
+                    label: l10n.selectedSourceLabel,
+                    value: source.title,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              left: 24,
+              right: 24,
+              bottom: 24,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    currentItem.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    currentItem.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      _OverlayBadge(
+                        label: l10n.itemsCountLabel,
+                        value: '${source.items.length}',
+                      ),
+                      _OverlayBadge(
+                        label: l10n.intervalLabel,
+                        value: '${settings.intervalSeconds}${l10n.secondsUnit}',
+                      ),
+                      FilledButton.tonalIcon(
+                        onPressed: _showPrevious,
+                        icon: const Icon(Icons.chevron_left),
+                        label: Text(l10n.previousFrame),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _showNext,
+                        icon: const Icon(Icons.chevron_right),
+                        label: Text(l10n.nextFrame),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -237,9 +250,10 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
 }
 
 class _PlaybackFrame extends StatelessWidget {
-  const _PlaybackFrame({required this.item});
+  const _PlaybackFrame({required this.item, required this.headers});
 
   final MediaItem item;
+  final Map<String, String> headers;
 
   @override
   Widget build(BuildContext context) {
@@ -251,12 +265,37 @@ class _PlaybackFrame extends StatelessWidget {
       return buildMediaAssetImage(item.path, isOriginal: true);
     }
 
+    if (item.kind == MediaItemKind.remote) {
+      return Image.network(
+        item.path,
+        headers: headers.isEmpty ? null : headers,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return ColoredBox(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: const Center(
+              child: Icon(Icons.cloud_off_outlined, size: 64),
+            ),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          }
+          return ColoredBox(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        },
+      );
+    }
+
     return Image.asset(item.assetPath, fit: BoxFit.cover);
   }
 }
 
-class _PlaybackMeta extends StatelessWidget {
-  const _PlaybackMeta({required this.label, required this.value});
+class _OverlayBadge extends StatelessWidget {
+  const _OverlayBadge({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -265,7 +304,7 @@ class _PlaybackMeta extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: Colors.black.withValues(alpha: 0.56),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
@@ -273,9 +312,19 @@ class _PlaybackMeta extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: Theme.of(context).textTheme.labelMedium),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Colors.white70,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
       ),

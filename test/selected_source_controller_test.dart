@@ -6,6 +6,7 @@ import 'package:art_frame/features/sources/application/local_sources_controller.
 import 'package:art_frame/features/sources/application/selected_source_controller.dart';
 import 'package:art_frame/features/sources/domain/media_item.dart';
 import 'package:art_frame/features/sources/domain/media_source.dart';
+import 'package:art_frame/features/sources/domain/network_source_config.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -177,6 +178,72 @@ void main() {
     await container
         .read(localSourcesControllerProvider.notifier)
         .remove(mediaLibrarySource.id);
+    await container.read(selectedSourceControllerProvider.notifier).clear();
+
+    expect(container.read(selectedSourceProvider), isNull);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('selected_source_id'), isNull);
+  });
+
+  test('删除当前选中的网络图源后清理选中状态', () async {
+    SharedPreferences.setMockInitialValues({});
+
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final localSourcesSub = container.listen(
+      localSourcesControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    final selectedSourceControllerSub = container.listen(
+      selectedSourceControllerProvider,
+      (previous, next) {},
+      fireImmediately: true,
+    );
+    addTearDown(localSourcesSub.close);
+    addTearDown(selectedSourceControllerSub.close);
+
+    const networkSource = MediaSource(
+      id: 'network-webdav:https:demo.local::/gallery:demo',
+      title: 'WebDAV Demo',
+      description: 'demo.local/gallery',
+      badge: 'Network source',
+      kind: MediaSourceKind.network,
+      networkConfig: NetworkSourceConfig(
+        protocol: NetworkSourceProtocol.webdav,
+        host: 'demo.local',
+        remotePath: '/gallery',
+        secure: true,
+        username: 'demo',
+        displayName: 'WebDAV Demo',
+      ),
+      items: [
+        MediaItem(
+          id: 'network-demo-item-1',
+          title: 'Remote placeholder',
+          path: 'https://demo.local/gallery/frame-1.jpg',
+          description: '/gallery/frame-1.jpg',
+          kind: MediaItemKind.remote,
+        ),
+      ],
+    );
+
+    await container.read(localSourcesControllerProvider.future);
+    await container.read(selectedSourceControllerProvider.future);
+
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .upsert(networkSource);
+    await container
+        .read(selectedSourceControllerProvider.notifier)
+        .select(networkSource.id);
+
+    expect(container.read(selectedSourceProvider)?.id, networkSource.id);
+
+    await container
+        .read(localSourcesControllerProvider.notifier)
+        .remove(networkSource.id);
     await container.read(selectedSourceControllerProvider.notifier).clear();
 
     expect(container.read(selectedSourceProvider), isNull);

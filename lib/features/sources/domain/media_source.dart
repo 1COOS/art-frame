@@ -1,8 +1,15 @@
 import 'package:flutter/foundation.dart';
 
 import 'media_item.dart';
+import 'network_source_config.dart';
 
-enum MediaSourceKind { bundled, localDirectory, localFiles, mediaLibrary }
+enum MediaSourceKind {
+  bundled,
+  localDirectory,
+  localFiles,
+  mediaLibrary,
+  network,
+}
 
 @immutable
 class MediaSource {
@@ -14,6 +21,7 @@ class MediaSource {
     required this.items,
     this.kind = MediaSourceKind.bundled,
     this.directoryPath,
+    this.networkConfig,
   });
 
   factory MediaSource.fromJson(Map<String, Object?> json) {
@@ -26,6 +34,10 @@ class MediaSource {
         (json['kind'] as String?) ?? MediaSourceKind.bundled.name,
       ),
       directoryPath: json['directoryPath'] as String?,
+      networkConfig: switch (json['networkConfig']) {
+        final Map<String, Object?> config => NetworkSourceConfig.fromJson(config),
+        _ => null,
+      },
       items: (json['items'] as List<Object?>)
           .cast<Map<String, Object?>>()
           .map(MediaItem.fromJson)
@@ -40,6 +52,7 @@ class MediaSource {
   final List<MediaItem> items;
   final MediaSourceKind kind;
   final String? directoryPath;
+  final NetworkSourceConfig? networkConfig;
 
   MediaSource copyWith({
     String? id,
@@ -49,6 +62,7 @@ class MediaSource {
     List<MediaItem>? items,
     MediaSourceKind? kind,
     String? directoryPath,
+    NetworkSourceConfig? networkConfig,
   }) {
     return MediaSource(
       id: id ?? this.id,
@@ -58,6 +72,7 @@ class MediaSource {
       items: items ?? this.items,
       kind: kind ?? this.kind,
       directoryPath: directoryPath ?? this.directoryPath,
+      networkConfig: networkConfig ?? this.networkConfig,
     );
   }
 
@@ -69,6 +84,7 @@ class MediaSource {
       'badge': badge,
       'kind': kind.name,
       'directoryPath': directoryPath,
+      'networkConfig': networkConfig?.toJson(),
       'items': items.map((item) => item.toJson()).toList(growable: false),
     };
   }

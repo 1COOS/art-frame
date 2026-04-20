@@ -29,16 +29,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppDestination.playback.path,
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: PlaybackPage(),
-                ),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: AppDestination.settings.path,
                 pageBuilder: (context, state) => const NoTransitionPage(
                   child: SettingsPage(),
@@ -47,6 +37,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppDestination.playback.path,
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: PlaybackPage(),
+        ),
       ),
     ],
     redirect: (context, state) {

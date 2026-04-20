@@ -13,6 +13,8 @@ import '../application/local_file_picker.dart';
 import '../application/local_sources_controller.dart';
 import '../application/media_library_picker.dart';
 import '../application/media_library_picker_result.dart';
+import '../application/network_source_result.dart';
+import '../application/network_source_service.dart';
 import '../application/selected_source_controller.dart';
 import '../domain/media_item.dart';
 import '../domain/media_source.dart';
@@ -34,6 +36,9 @@ class SourcesPage extends ConsumerWidget {
     final canImportDirectory = _supportsDirectoryImport();
     final canImportMediaLibrary = ref
         .read(mediaLibraryPickerProvider)
+        .isSupported;
+    final canImportNetworkSource = ref
+        .read(networkSourceServiceProvider)
         .isSupported;
 
     Future<void> pickLocalFiles() async {
@@ -142,6 +147,53 @@ class SourcesPage extends ConsumerWidget {
       }
     }
 
+    Future<void> pickNetworkSource() async {
+      final result = await ref
+          .read(networkSourceServiceProvider)
+          .createSource(
+            context,
+            title: l10n.networkSourceTitle,
+            description: l10n.networkSourceDescription,
+            badge: l10n.networkSourceBadge,
+          );
+      if (!context.mounted) {
+        return;
+      }
+
+      switch (result) {
+        case NetworkSourceValidationSuccess(:final draft):
+          final source = await ref
+              .read(localSourcesControllerProvider.notifier)
+              .importNetworkSource(draft);
+          if (source == null || !context.mounted) {
+            return;
+          }
+
+          await ref
+              .read(selectedSourceControllerProvider.notifier)
+              .select(source.id);
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.networkSourceImported(source.items.length)),
+              ),
+            );
+            context.go(AppDestination.playback.path);
+          }
+        case NetworkSourceValidationFailure(:final message):
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        case NetworkSourceValidationUnsupported():
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.networkSourceUnavailable)),
+          );
+        case NetworkSourceValidationCancelled():
+          return;
+      }
+    }
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -188,6 +240,12 @@ class SourcesPage extends ConsumerWidget {
                     onPressed: pickMediaLibrary,
                     icon: const Icon(Icons.photo_library_outlined),
                     label: Text(l10n.addMediaLibrarySource),
+                  ),
+                if (canImportNetworkSource)
+                  FilledButton.tonalIcon(
+                    onPressed: pickNetworkSource,
+                    icon: const Icon(Icons.cloud_outlined),
+                    label: Text(l10n.addNetworkSource),
                   ),
               ],
             ),
@@ -283,7 +341,7 @@ class _SourceCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: _SourcePreview(item: preview),
+                  child: _SourcePreview(source: source),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -369,18 +427,85 @@ class _SourceCard extends StatelessWidget {
 }
 
 class _SourcePreview extends StatelessWidget {
-  const _SourcePreview({required this.item});
+  const _SourcePreview({required this.source});
 
-  final MediaItem item;
+  final MediaSource source;
 
   @override
   Widget build(BuildContext context) {
+    final item = source.items.first;
+
     if (item.kind == MediaItemKind.file) {
       return buildLocalImage(item.path, width: 132, height: 92);
     }
 
     if (item.kind == MediaItemKind.mediaAsset) {
       return buildMediaAssetImage(item.path, width: 132, height: 92);
+    }
+
+    if (item.kind == MediaItemKind.remote) {
+      final colorScheme = Theme.of(context).colorScheme;
+      final textTheme = Theme.of(context).textTheme;
+
+      return Image.network(
+        item.path,
+        headers: source.networkConfig?.authorizationHeaders,
+        width: 132,
+        height: 92,
+        fit: BoxFit.cover,
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          final isLoaded = wasSynchronouslyLoaded || frame != null;
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              AnimatedOpacity(
+                opacity: isLoaded ? 0 : 1,
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                child: ColoredBox(
+                  color: colorScheme.surfaceContainerHighest,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2.2),
+                      ),
+                      const SizedBox(height: 8),
+                      Text('正在加载缩略图', style: textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+              ),
+              AnimatedOpacity(
+                opacity: isLoaded ? 1 : 0,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                child: child,
+              ),
+            ],
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return ColoredBox(
+            color: colorScheme.surfaceContainerHighest,
+            child: SizedBox(
+              width: 132,
+              height: 92,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.cloud_off_outlined, size: 28),
+                  const SizedBox(height: 6),
+                  Text('缩略图加载失败', style: textTheme.bodySmall),
+                ],
+              ),
+            ),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) => child,
+      );
     }
 
     return Image.asset(

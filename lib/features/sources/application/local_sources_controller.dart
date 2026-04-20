@@ -7,6 +7,8 @@ import 'bundled_sources_provider.dart';
 import 'local_directory_scanner.dart';
 import 'local_security_scope_access.dart';
 import 'local_sources_repository.dart';
+import 'network_source_result.dart';
+import 'network_source_secrets_store.dart';
 
 part 'local_sources_controller.g.dart';
 
@@ -15,7 +17,10 @@ class LocalSourcesController extends _$LocalSourcesController {
   @override
   Future<List<MediaSource>> build() async {
     final repository = ref.watch(localSourcesRepositoryProvider);
-    final sources = await repository.load();
+    final restored = await repository.load();
+    final sources = await ref
+        .read(networkSourceSecretsStoreProvider)
+        .attachSecrets(restored);
     await ref.read(localSecurityScopeAccessProvider).restoreAccess(sources);
     return sources;
   }
@@ -103,6 +108,25 @@ class LocalSourcesController extends _$LocalSourcesController {
     return source;
   }
 
+  Future<MediaSource?> importNetworkSource(NetworkSourceDraft draft) async {
+    if (draft.items.isEmpty) {
+      return null;
+    }
+
+    final source = MediaSource(
+      id: 'network-${draft.config.stableId}',
+      title: draft.title,
+      description: draft.description,
+      badge: draft.badge,
+      kind: MediaSourceKind.network,
+      networkConfig: draft.config,
+      items: draft.items,
+    );
+
+    await upsert(source);
+    return source;
+  }
+
   Future<void> replaceAll(List<MediaSource> sources) async {
     state = AsyncData(sources);
     final repository = ref.read(localSourcesRepositoryProvider);
@@ -112,10 +136,14 @@ class LocalSourcesController extends _$LocalSourcesController {
 
   Future<void> remove(String sourceId) async {
     final current = state.asData?.value ?? const <MediaSource>[];
+    final removed = current.where((item) => item.id == sourceId).toList();
     final next = [
       for (final item in current)
         if (item.id != sourceId) item,
     ];
+    for (final source in removed) {
+      await ref.read(networkSourceSecretsStoreProvider).remove(source);
+    }
     await replaceAll(next);
   }
 
@@ -126,6 +154,7 @@ class LocalSourcesController extends _$LocalSourcesController {
         if (item.id != source.id) item,
       source,
     ];
+    await ref.read(networkSourceSecretsStoreProvider).save(source);
     await replaceAll(next);
   }
 

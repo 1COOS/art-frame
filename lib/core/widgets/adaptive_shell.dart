@@ -32,11 +32,6 @@ class AdaptiveShell extends StatelessWidget {
             selectedIcon: Icons.folder_open,
           ),
           _ShellDestination(
-            label: l10n.playbackTab,
-            icon: Icons.slideshow_outlined,
-            selectedIcon: Icons.slideshow,
-          ),
-          _ShellDestination(
             label: l10n.settingsTab,
             icon: Icons.settings_outlined,
             selectedIcon: Icons.settings,

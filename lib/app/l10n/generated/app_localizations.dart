@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// No description provided for @sourcesBody.
   ///
   /// In en, this message translates to:
-  /// **'Manage bundled, local file, local directory, and media library sources for playback.'**
+  /// **'Manage bundled, local file, local directory, media library, and network sources for playback.'**
   String get sourcesBody;
 
   /// No description provided for @playbackTitle.
@@ -350,6 +350,12 @@ abstract class AppLocalizations {
   /// **'Add media library'**
   String get addMediaLibrarySource;
 
+  /// No description provided for @addNetworkSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Add network source'**
+  String get addNetworkSource;
+
   /// No description provided for @localFilesSourceTitle.
   ///
   /// In en, this message translates to:
@@ -392,6 +398,30 @@ abstract class AppLocalizations {
   /// **'Media library'**
   String get mediaLibrarySourceBadge;
 
+  /// No description provided for @networkSourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Network source'**
+  String get networkSourceTitle;
+
+  /// No description provided for @networkSourceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A reusable placeholder source backed by a remote protocol configuration.'**
+  String get networkSourceDescription;
+
+  /// No description provided for @networkSourceBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Network source'**
+  String get networkSourceBadge;
+
+  /// No description provided for @networkSourceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Network source import is not available on this platform'**
+  String get networkSourceUnavailable;
+
   /// No description provided for @removeSource.
   ///
   /// In en, this message translates to:
@@ -415,6 +445,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Imported {count} images from the media library'**
   String mediaLibraryImported(int count);
+
+  /// No description provided for @networkSourceImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} images from the network source'**
+  String networkSourceImported(int count);
 
   /// No description provided for @mediaLibraryPermissionDenied.
   ///
