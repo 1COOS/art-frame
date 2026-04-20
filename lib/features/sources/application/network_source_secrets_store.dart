@@ -10,19 +10,25 @@ const _networkSourceSecretsStorageKey = 'network_source_secrets';
 class NetworkSourceSecretsStore {
   const NetworkSourceSecretsStore();
 
-  Future<void> save(MediaSource source) async {
+  Future<void> save(MediaSource source, {String? previousStableId}) async {
     final config = source.networkConfig;
     if (source.kind != MediaSourceKind.network || config == null) {
       return;
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    final current = _decode(prefs.getString(_networkSourceSecretsStorageKey));
+    if (previousStableId != null && previousStableId != config.stableId) {
+      current.remove(previousStableId);
+    }
+
     final password = config.password;
     if (password == null || password.isEmpty) {
+      current.remove(config.stableId);
+      await prefs.setString(_networkSourceSecretsStorageKey, jsonEncode(current));
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final current = _decode(prefs.getString(_networkSourceSecretsStorageKey));
     current[config.stableId] = password;
     await prefs.setString(_networkSourceSecretsStorageKey, jsonEncode(current));
   }

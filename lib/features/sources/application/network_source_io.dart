@@ -11,13 +11,28 @@ Future<NetworkSourceValidationResult> createSource(
   required String title,
   required String description,
   required String badge,
+  NetworkSourceDraft? initialDraft,
 }) async {
-  final hostController = TextEditingController(text: 'demo.local');
-  final portController = TextEditingController(text: '80');
-  final pathController = TextEditingController(text: '/gallery');
-  final userController = TextEditingController(text: 'demo');
-  final passwordController = TextEditingController(text: 'demo');
-  var secure = false;
+  final initialConfig = initialDraft?.config;
+  final titleController = TextEditingController(
+    text: initialDraft?.title ?? title,
+  );
+  final hostController = TextEditingController(
+    text: initialConfig?.host ?? 'demo.local',
+  );
+  final portController = TextEditingController(
+    text: initialConfig?.port?.toString() ?? '80',
+  );
+  final pathController = TextEditingController(
+    text: initialConfig?.remotePath ?? '/gallery',
+  );
+  final userController = TextEditingController(
+    text: initialConfig?.username ?? 'demo',
+  );
+  final passwordController = TextEditingController(
+    text: initialConfig?.password ?? 'demo',
+  );
+  var secure = initialConfig?.secure ?? false;
   var submitting = false;
   String? errorText;
 
@@ -38,6 +53,9 @@ Future<NetworkSourceValidationResult> createSource(
               pathInput: pathController.text,
               secure: secure,
             );
+            final resolvedTitle = titleController.text.trim().isEmpty
+                ? title
+                : titleController.text.trim();
             final config = NetworkSourceConfig(
               protocol: NetworkSourceProtocol.webdav,
               host: parsed.host,
@@ -48,7 +66,7 @@ Future<NetworkSourceValidationResult> createSource(
               password: passwordController.text,
               secure: parsed.secure,
               port: parsed.port,
-              displayName: parsed.host,
+              displayName: resolvedTitle,
             );
 
             if (config.host.isEmpty || config.remotePath.isEmpty) {
@@ -72,7 +90,7 @@ Future<NetworkSourceValidationResult> createSource(
                 dialogContext,
                 client: client,
                 initialConfig: config,
-                title: title,
+                title: resolvedTitle,
                 badge: badge,
               );
               if (draft == null) {
@@ -109,6 +127,11 @@ Future<NetworkSourceValidationResult> createSource(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Title'),
+                  ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: hostController,
                     decoration: const InputDecoration(

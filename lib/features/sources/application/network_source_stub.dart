@@ -9,6 +9,7 @@ Future<NetworkSourceValidationResult> createSource(
   required String title,
   required String description,
   required String badge,
+  NetworkSourceDraft? initialDraft,
 }) async {
   return const NetworkSourceValidationUnsupported();
 }

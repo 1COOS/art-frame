@@ -12,7 +12,7 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: ArtFrameBootstrapApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Foundation Gallery'), findsOneWidget);
+    expect(find.text('Sources'), findsWidgets);
     expect(find.text('Add local files'), findsOneWidget);
     expect(find.text('Add local directory'), findsOneWidget);
     expect(find.text('Add media library'), findsOneWidget);
@@ -30,7 +30,7 @@ void main() {
 
     expect(find.text('播放设置'), findsOneWidget);
 
-    await tester.tap(find.text('图源'));
+    await tester.tap(find.text('图源').first);
     await tester.pumpAndSettle();
 
     expect(find.text('添加本地文件'), findsOneWidget);
@@ -38,13 +38,21 @@ void main() {
     expect(find.text('添加媒体库'), findsOneWidget);
     expect(find.text('添加网络图源'), findsOneWidget);
 
-    await tester.tap(find.text('打开播放'));
+    final openPlaybackButton = find.widgetWithText(FilledButton, '打开播放');
+    await tester.ensureVisible(openPlaybackButton.first);
+    await tester.pumpAndSettle();
+    await tester.tap(openPlaybackButton.first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Foundation Gallery'), findsOneWidget);
-    expect(find.text('当前图源'), findsOneWidget);
-    expect(find.text('上一张'), findsOneWidget);
-    expect(find.text('下一张'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+    expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+    expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Text && (widget.data?.contains('/') ?? false),
+      ),
+      findsWidgets,
+    );
     expect(find.byType(NavigationBar), findsNothing);
     expect(find.byType(NavigationRail), findsNothing);
     expect(find.text('设置'), findsNothing);

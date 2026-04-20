@@ -428,6 +428,30 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get removeSource;
 
+  /// No description provided for @editSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editSource;
+
+  /// No description provided for @sourceSummaryReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items ready'**
+  String sourceSummaryReady(int count);
+
+  /// No description provided for @playbackCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String playbackCounter(int current, int total);
+
+  /// No description provided for @networkSourceUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated network source with {count} images'**
+  String networkSourceUpdated(int count);
+
   /// No description provided for @localFilesImported.
   ///
   /// In en, this message translates to:

@@ -127,6 +127,29 @@ class LocalSourcesController extends _$LocalSourcesController {
     return source;
   }
 
+  Future<MediaSource?> updateNetworkSource(
+    String sourceId,
+    NetworkSourceDraft draft, {
+    String? previousStableId,
+  }) async {
+    if (draft.items.isEmpty) {
+      return null;
+    }
+
+    final source = MediaSource(
+      id: sourceId,
+      title: draft.title,
+      description: draft.description,
+      badge: draft.badge,
+      kind: MediaSourceKind.network,
+      networkConfig: draft.config,
+      items: draft.items,
+    );
+
+    await upsert(source, previousStableId: previousStableId);
+    return source;
+  }
+
   Future<void> replaceAll(List<MediaSource> sources) async {
     state = AsyncData(sources);
     final repository = ref.read(localSourcesRepositoryProvider);
@@ -147,14 +170,17 @@ class LocalSourcesController extends _$LocalSourcesController {
     await replaceAll(next);
   }
 
-  Future<void> upsert(MediaSource source) async {
+  Future<void> upsert(MediaSource source, {String? previousStableId}) async {
     final current = state.asData?.value ?? const <MediaSource>[];
     final next = [
       for (final item in current)
         if (item.id != source.id) item,
       source,
     ];
-    await ref.read(networkSourceSecretsStoreProvider).save(source);
+    await ref.read(networkSourceSecretsStoreProvider).save(
+      source,
+      previousStableId: previousStableId,
+    );
     await replaceAll(next);
   }
 

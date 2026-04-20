@@ -194,100 +194,194 @@ class SourcesPage extends ConsumerWidget {
       }
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          crossAxisAlignment: WrapCrossAlignment.start,
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 980),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
           children: [
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.sourcesTitle,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.sourcesBody,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ],
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Wrap(
+                  spacing: 24,
+                  runSpacing: 24,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  alignment: WrapAlignment.spaceBetween,
+                  children: [
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.secondaryContainer,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(
+                              Icons.photo_library_outlined,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            l10n.sourcesTitle,
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            l10n.sourcesBody,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.end,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: pickLocalFiles,
+                          icon: const Icon(Icons.add_photo_alternate_outlined),
+                          label: Text(l10n.addLocalFilesSource),
+                        ),
+                        if (canImportDirectory)
+                          OutlinedButton.icon(
+                            onPressed: pickLocalDirectory,
+                            icon: const Icon(Icons.folder_open_outlined),
+                            label: Text(l10n.addLocalDirectorySource),
+                          ),
+                        if (canImportMediaLibrary)
+                          OutlinedButton.icon(
+                            onPressed: pickMediaLibrary,
+                            icon: const Icon(Icons.photo_library_outlined),
+                            label: Text(l10n.addMediaLibrarySource),
+                          ),
+                        if (canImportNetworkSource)
+                          OutlinedButton.icon(
+                            onPressed: pickNetworkSource,
+                            icon: const Icon(Icons.cloud_outlined),
+                            label: Text(l10n.addNetworkSource),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              alignment: WrapAlignment.end,
-              children: [
-                FilledButton.icon(
-                  onPressed: pickLocalFiles,
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: Text(l10n.addLocalFilesSource),
+            const SizedBox(height: 24),
+            for (final source in sources)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _SourceCard(
+                  source: source,
+                  isSelected: source.id == selectedId,
+                  intervalSeconds: settings.intervalSeconds,
+                  onSelect: () {
+                    ref
+                        .read(selectedSourceControllerProvider.notifier)
+                        .select(source.id);
+                  },
+                  onOpenPlayback: () {
+                    ref
+                        .read(selectedSourceControllerProvider.notifier)
+                        .select(source.id);
+                    if (context.mounted) {
+                      context.go(AppDestination.playback.path);
+                    }
+                  },
+                  onEdit: source.kind != MediaSourceKind.network
+                      ? null
+                      : () async {
+                          final draft = NetworkSourceDraft(
+                            title: source.title,
+                            description: source.description,
+                            badge: source.badge,
+                            config: source.networkConfig!,
+                            items: source.items,
+                          );
+                          final result = await ref
+                              .read(networkSourceServiceProvider)
+                              .createSource(
+                                context,
+                                title: l10n.networkSourceTitle,
+                                description: l10n.networkSourceDescription,
+                                badge: l10n.networkSourceBadge,
+                                initialDraft: draft,
+                              );
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          switch (result) {
+                            case NetworkSourceValidationSuccess(:final draft):
+                              final previousStableId =
+                                  source.networkConfig?.stableId;
+                              final updated = await ref
+                                  .read(localSourcesControllerProvider.notifier)
+                                  .updateNetworkSource(
+                                    source.id,
+                                    draft,
+                                    previousStableId: previousStableId,
+                                  );
+                              if (updated == null || !context.mounted) {
+                                return;
+                              }
+                              await ref
+                                  .read(selectedSourceControllerProvider.notifier)
+                                  .select(updated.id);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      l10n.networkSourceUpdated(
+                                        updated.items.length,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            case NetworkSourceValidationFailure(:final message):
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(message)));
+                            case NetworkSourceValidationUnsupported():
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.networkSourceUnavailable),
+                                ),
+                              );
+                            case NetworkSourceValidationCancelled():
+                              return;
+                          }
+                        },
+                  onRemove: source.kind == MediaSourceKind.bundled
+                      ? null
+                      : () async {
+                          final removingSelected = source.id == selectedId;
+                          await ref
+                              .read(localSourcesControllerProvider.notifier)
+                              .remove(source.id);
+                          if (removingSelected) {
+                            await ref
+                                .read(selectedSourceControllerProvider.notifier)
+                                .clear();
+                          }
+                        },
                 ),
-                if (canImportDirectory)
-                  FilledButton.tonalIcon(
-                    onPressed: pickLocalDirectory,
-                    icon: const Icon(Icons.folder_open_outlined),
-                    label: Text(l10n.addLocalDirectorySource),
-                  ),
-                if (canImportMediaLibrary)
-                  FilledButton.tonalIcon(
-                    onPressed: pickMediaLibrary,
-                    icon: const Icon(Icons.photo_library_outlined),
-                    label: Text(l10n.addMediaLibrarySource),
-                  ),
-                if (canImportNetworkSource)
-                  FilledButton.tonalIcon(
-                    onPressed: pickNetworkSource,
-                    icon: const Icon(Icons.cloud_outlined),
-                    label: Text(l10n.addNetworkSource),
-                  ),
-              ],
-            ),
+              ),
           ],
         ),
-        const SizedBox(height: 24),
-        for (final source in sources)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _SourceCard(
-              source: source,
-              isSelected: source.id == selectedId,
-              intervalSeconds: settings.intervalSeconds,
-              onSelect: () {
-                ref
-                    .read(selectedSourceControllerProvider.notifier)
-                    .select(source.id);
-              },
-              onOpenPlayback: () {
-                ref
-                    .read(selectedSourceControllerProvider.notifier)
-                    .select(source.id);
-                if (context.mounted) {
-                  context.go(AppDestination.playback.path);
-                }
-              },
-              onRemove: source.kind == MediaSourceKind.bundled
-                  ? null
-                  : () async {
-                      final removingSelected = source.id == selectedId;
-                      await ref
-                          .read(localSourcesControllerProvider.notifier)
-                          .remove(source.id);
-                      if (removingSelected) {
-                        await ref
-                            .read(selectedSourceControllerProvider.notifier)
-                            .clear();
-                      }
-                    },
-            ),
-          ),
-      ],
+      ),
     );
   }
 
@@ -313,6 +407,7 @@ class _SourceCard extends StatelessWidget {
     required this.intervalSeconds,
     required this.onSelect,
     required this.onOpenPlayback,
+    this.onEdit,
     this.onRemove,
   });
 
@@ -321,13 +416,14 @@ class _SourceCard extends StatelessWidget {
   final int intervalSeconds;
   final VoidCallback onSelect;
   final VoidCallback onOpenPlayback;
+  final VoidCallback? onEdit;
   final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final preview = source.items.first;
+    final colorScheme = theme.colorScheme;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -340,7 +436,7 @@ class _SourceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   child: _SourcePreview(source: source),
                 ),
                 const SizedBox(width: 16),
@@ -364,59 +460,65 @@ class _SourceCard extends StatelessWidget {
                           ),
                           if (isSelected)
                             Chip(
+                              avatar: Icon(
+                                Icons.check_circle_outlined,
+                                size: 18,
+                                color: colorScheme.onSecondaryContainer,
+                              ),
                               label: Text(l10n.selectedSourceLabel),
                               visualDensity: VisualDensity.compact,
-                            ),
-                          if (onRemove != null)
-                            ActionChip(
-                              avatar: const Icon(
-                                Icons.delete_outline,
-                                size: 18,
+                              backgroundColor: colorScheme.secondaryContainer,
+                              labelStyle: theme.textTheme.labelMedium?.copyWith(
+                                color: colorScheme.onSecondaryContainer,
                               ),
-                              label: Text(l10n.removeSource),
-                              onPressed: onRemove,
+                              side: BorderSide.none,
                             ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(source.description),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          _MetaBadge(
-                            label: l10n.itemsCountLabel,
-                            value: '${source.items.length}',
-                          ),
-                          _MetaBadge(
-                            label: l10n.intervalLabel,
-                            value: '$intervalSeconds ${l10n.secondsUnit}',
-                          ),
-                          _MetaBadge(
-                            label: l10n.sourceReady,
-                            value: preview.title,
-                          ),
-                        ],
+                      const SizedBox(height: 10),
+                      Text(
+                        l10n.sourceSummaryReady(source.items.length),
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        source.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                FilledButton.tonal(
-                  onPressed: onSelect,
-                  child: Text(l10n.selectSource),
-                ),
                 FilledButton(
                   onPressed: onOpenPlayback,
                   child: Text(l10n.openPlayback),
                 ),
+                OutlinedButton(
+                  onPressed: onSelect,
+                  child: Text(l10n.selectSource),
+                ),
+                if (onEdit != null)
+                  OutlinedButton.icon(
+                    onPressed: onEdit,
+                    icon: const Icon(Icons.edit_outlined),
+                    label: Text(l10n.editSource),
+                  ),
+                if (onRemove != null)
+                  TextButton.icon(
+                    onPressed: onRemove,
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l10n.removeSource),
+                  ),
               ],
             ),
           ],
@@ -455,36 +557,27 @@ class _SourcePreview extends StatelessWidget {
         fit: BoxFit.cover,
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
           final isLoaded = wasSynchronouslyLoaded || frame != null;
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              AnimatedOpacity(
-                opacity: isLoaded ? 0 : 1,
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                child: ColoredBox(
-                  color: colorScheme.surfaceContainerHighest,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2.2),
-                      ),
-                      const SizedBox(height: 8),
-                      Text('正在加载缩略图', style: textTheme.bodySmall),
-                    ],
+          if (isLoaded) {
+            return child;
+          }
+          return ColoredBox(
+            color: colorScheme.surfaceContainerHighest,
+            child: SizedBox(
+              width: 132,
+              height: 92,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.2),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Text('正在加载缩略图', style: textTheme.bodySmall),
+                ],
               ),
-              AnimatedOpacity(
-                opacity: isLoaded ? 1 : 0,
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut,
-                child: child,
-              ),
-            ],
+            ),
           );
         },
         errorBuilder: (context, error, stackTrace) {
@@ -517,30 +610,3 @@ class _SourcePreview extends StatelessWidget {
   }
 }
 
-class _MetaBadge extends StatelessWidget {
-  const _MetaBadge({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.labelMedium),
-            const SizedBox(height: 4),
-            Text(value, style: Theme.of(context).textTheme.titleSmall),
-          ],
-        ),
-      ),
-    );
-  }
-}

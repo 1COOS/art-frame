@@ -55,6 +55,34 @@
   "networkSourceBadge": "网络图源",
   "networkSourceUnavailable": "当前平台不支持网络图源导入",
   "removeSource": "移除",
+  "editSource": "编辑",
+  "sourceSummaryReady": "共 {count} 项内容",
+  "@sourceSummaryReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackCounter": "第 {current} / {total} 项",
+  "@playbackCounter": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "networkSourceUpdated": "网络图源已更新，共 {count} 张图片",
+  "@networkSourceUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@localFilesImported": {
     "placeholders": {
       "count": {

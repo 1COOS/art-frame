@@ -55,6 +55,34 @@
   "networkSourceBadge": "Network source",
   "networkSourceUnavailable": "Network source import is not available on this platform",
   "removeSource": "Remove",
+  "editSource": "Edit",
+  "sourceSummaryReady": "{count} items ready",
+  "@sourceSummaryReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackCounter": "{current} / {total}",
+  "@playbackCounter": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "networkSourceUpdated": "Updated network source with {count} images",
+  "@networkSourceUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@localFilesImported": {
     "placeholders": {
       "count": {

@@ -184,6 +184,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeSource => 'Remove';
 
   @override
+  String get editSource => 'Edit';
+
+  @override
+  String sourceSummaryReady(int count) {
+    return '$count items ready';
+  }
+
+  @override
+  String playbackCounter(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
+  String networkSourceUpdated(int count) {
+    return 'Updated network source with $count images';
+  }
+
+  @override
   String localFilesImported(int count) {
     return 'Imported $count local files';
   }

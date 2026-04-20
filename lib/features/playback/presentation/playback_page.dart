@@ -95,37 +95,24 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
                   source.networkConfig?.authorizationHeaders ??
                   const <String, String>{},
             ),
-            DecoratedBox(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xB3000000),
-                    Colors.transparent,
-                    Colors.transparent,
-                    Color(0xB3000000),
-                  ],
-                  stops: [0, 0.22, 0.7, 1],
-                ),
-              ),
-            ),
             Positioned(
               top: 16,
               left: 16,
               right: 16,
               child: Row(
                 children: [
-                  FilledButton.tonalIcon(
+                  FilledButton.tonal(
                     onPressed: () => context.go(AppDestination.sources.path),
-                    icon: const Icon(Icons.arrow_back),
-                    label: Text(l10n.goToSources),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Icon(Icons.arrow_back),
                   ),
                   const Spacer(),
-                  _OverlayBadge(
-                    label: l10n.selectedSourceLabel,
-                    value: source.title,
-                  ),
+                  _OverlayBadge(value: l10n.playbackCounter(normalizedIndex + 1, source.items.length)),
                 ],
               ),
             ),
@@ -133,51 +120,41 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
               left: 24,
               right: 24,
               bottom: 24,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    currentItem.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.white,
+                  Expanded(
+                    child: Text(
+                      source.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    currentItem.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white,
+                  const SizedBox(width: 12),
+                  FilledButton.tonal(
+                    onPressed: _showPrevious,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
+                    child: const Icon(Icons.chevron_left),
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      _OverlayBadge(
-                        label: l10n.itemsCountLabel,
-                        value: '${source.items.length}',
+                  const SizedBox(width: 8),
+                  FilledButton.tonal(
+                    onPressed: _showNext,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      _OverlayBadge(
-                        label: l10n.intervalLabel,
-                        value: '${settings.intervalSeconds}${l10n.secondsUnit}',
-                      ),
-                      FilledButton.tonalIcon(
-                        onPressed: _showPrevious,
-                        icon: const Icon(Icons.chevron_left),
-                        label: Text(l10n.previousFrame),
-                      ),
-                      FilledButton.icon(
-                        onPressed: _showNext,
-                        icon: const Icon(Icons.chevron_right),
-                        label: Text(l10n.nextFrame),
-                      ),
-                    ],
+                    ),
+                    child: const Icon(Icons.chevron_right),
                   ),
                 ],
               ),
@@ -295,37 +272,24 @@ class _PlaybackFrame extends StatelessWidget {
 }
 
 class _OverlayBadge extends StatelessWidget {
-  const _OverlayBadge({required this.label, required this.value});
+  const _OverlayBadge({required this.value});
 
-  final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.56),
+        color: Colors.black.withValues(alpha: 0.44),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Colors.white,
-              ),
-            ),
-          ],
+        child: Text(
+          value,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: Colors.white,
+          ),
         ),
       ),
     );

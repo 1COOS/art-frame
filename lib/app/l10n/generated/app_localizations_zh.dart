@@ -174,6 +174,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeSource => '移除';
 
   @override
+  String get editSource => '编辑';
+
+  @override
+  String sourceSummaryReady(int count) {
+    return '共 $count 项内容';
+  }
+
+  @override
+  String playbackCounter(int current, int total) {
+    return '第 $current / $total 项';
+  }
+
+  @override
+  String networkSourceUpdated(int count) {
+    return '网络图源已更新，共 $count 张图片';
+  }
+
+  @override
   String localFilesImported(int count) {
     return '已导入 $count 个本地文件';
   }

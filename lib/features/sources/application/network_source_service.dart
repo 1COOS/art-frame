@@ -15,12 +15,14 @@ class NetworkSourceService {
     required String title,
     required String description,
     required String badge,
+    NetworkSourceDraft? initialDraft,
   }) {
     return impl.createSource(
       context,
       title: title,
       description: description,
       badge: badge,
+      initialDraft: initialDraft,
     );
   }
 }
