@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:art_frame/features/settings/application/appearance_settings.dart';
 import 'package:art_frame/features/settings/application/appearance_settings_controller.dart';
 
 void main() {
@@ -33,5 +34,36 @@ void main() {
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('appearance_theme_mode'), 'light');
+  });
+
+  test('屏幕方向偏好会持久化并恢复', () async {
+    SharedPreferences.setMockInitialValues({
+      'appearance_orientation_preference': 'portrait',
+    });
+
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    expect(
+      (await container.read(appearanceSettingsControllerProvider.future))
+          .orientationPreference,
+      AppOrientationPreference.portrait,
+    );
+
+    await container
+        .read(appearanceSettingsControllerProvider.notifier)
+        .setOrientationPreference(AppOrientationPreference.landscape);
+
+    expect(
+      container
+          .read(appearanceSettingsControllerProvider)
+          .asData
+          ?.value
+          .orientationPreference,
+      AppOrientationPreference.landscape,
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('appearance_orientation_preference'), 'landscape');
   });
 }

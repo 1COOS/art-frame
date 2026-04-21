@@ -68,7 +68,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsGeneralBody =>
-      'Choose the app language and theme mode used across the entire experience.';
+      'Choose the app language, theme mode, and screen orientation used across the entire experience.';
 
   @override
   String get settingsPlaybackTitle => 'Playback';
@@ -95,6 +95,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Dark';
+
+  @override
+  String get orientationPreferenceLabel => 'Screen orientation';
+
+  @override
+  String get orientationPreferenceSystem => 'Auto';
+
+  @override
+  String get orientationPreferencePortrait => 'Portrait';
+
+  @override
+  String get orientationPreferenceLandscape => 'Landscape';
 
   @override
   String get appVersionLabel => 'Version';

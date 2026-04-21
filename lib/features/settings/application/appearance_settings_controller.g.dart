@@ -39,7 +39,7 @@ final class AppearanceSettingsControllerProvider
 }
 
 String _$appearanceSettingsControllerHash() =>
-    r'd790c7c154b856293990b055a524d7ac1e1021f5';
+    r'86225d7afcbf15955b1d571fea8a45e506494071';
 
 abstract class _$AppearanceSettingsController
     extends $AsyncNotifier<AppearanceSettings> {

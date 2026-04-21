@@ -209,7 +209,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsGeneralBody.
   ///
   /// In en, this message translates to:
-  /// **'Choose the app language and theme mode used across the entire experience.'**
+  /// **'Choose the app language, theme mode, and screen orientation used across the entire experience.'**
   String get settingsGeneralBody;
 
   /// No description provided for @settingsPlaybackTitle.
@@ -259,6 +259,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeModeDark;
+
+  /// No description provided for @orientationPreferenceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen orientation'**
+  String get orientationPreferenceLabel;
+
+  /// No description provided for @orientationPreferenceSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get orientationPreferenceSystem;
+
+  /// No description provided for @orientationPreferencePortrait.
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait'**
+  String get orientationPreferencePortrait;
+
+  /// No description provided for @orientationPreferenceLandscape.
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get orientationPreferenceLandscape;
 
   /// No description provided for @appVersionLabel.
   ///

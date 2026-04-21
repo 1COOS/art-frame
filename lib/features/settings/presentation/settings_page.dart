@@ -126,6 +126,37 @@ class SettingsPage extends ConsumerWidget {
                           .setThemeMode(selection.first);
                     },
                   ),
+                  const Divider(),
+                  Text(
+                    l10n.orientationPreferenceLabel,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  SegmentedButton<AppOrientationPreference>(
+                    segments: [
+                      ButtonSegment<AppOrientationPreference>(
+                        value: AppOrientationPreference.system,
+                        label: Text(l10n.orientationPreferenceSystem),
+                        icon: const Icon(Icons.screen_rotation_alt_rounded),
+                      ),
+                      ButtonSegment<AppOrientationPreference>(
+                        value: AppOrientationPreference.portrait,
+                        label: Text(l10n.orientationPreferencePortrait),
+                        icon: const Icon(Icons.stay_current_portrait_rounded),
+                      ),
+                      ButtonSegment<AppOrientationPreference>(
+                        value: AppOrientationPreference.landscape,
+                        label: Text(l10n.orientationPreferenceLandscape),
+                        icon: const Icon(Icons.stay_current_landscape_rounded),
+                      ),
+                    ],
+                    selected: {appearanceSettings.orientationPreference},
+                    onSelectionChanged: (selection) {
+                      ref
+                          .read(appearanceSettingsControllerProvider.notifier)
+                          .setOrientationPreference(selection.first);
+                    },
+                  ),
                 ],
               ),
             ),

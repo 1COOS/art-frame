@@ -63,7 +63,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsGeneralTitle => '通用';
 
   @override
-  String get settingsGeneralBody => '配置整个应用共享的语言与主题模式。';
+  String get settingsGeneralBody => '配置整个应用共享的语言、主题模式与屏幕方向。';
 
   @override
   String get settingsPlaybackTitle => '播放';
@@ -88,6 +88,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeModeDark => '深色';
+
+  @override
+  String get orientationPreferenceLabel => '屏幕方向';
+
+  @override
+  String get orientationPreferenceSystem => '自动';
+
+  @override
+  String get orientationPreferencePortrait => '竖屏';
+
+  @override
+  String get orientationPreferenceLandscape => '横屏';
 
   @override
   String get appVersionLabel => '版本';

@@ -32,6 +32,7 @@ void main() {
     expect(find.text('Settings'), findsWidgets);
     expect(find.text('General'), findsOneWidget);
     expect(find.text('System'), findsOneWidget);
+    expect(find.text('Auto'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Project repository'),
@@ -56,6 +57,7 @@ void main() {
     expect(find.text('图源'), findsWidgets);
     expect(find.text('通用'), findsOneWidget);
     expect(find.text('跟随系统'), findsOneWidget);
+    expect(find.text('自动'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('项目仓库'),

@@ -8,16 +8,26 @@ import '../l10n/generated/app_localizations.dart';
 import '../router/app_router.dart';
 import '../theme/app_theme.dart';
 
-class ArtFrameBootstrapApp extends ConsumerWidget {
+class ArtFrameBootstrapApp extends ConsumerStatefulWidget {
   const ArtFrameBootstrapApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ArtFrameBootstrapApp> createState() =>
+      _ArtFrameBootstrapAppState();
+}
+
+class _ArtFrameBootstrapAppState extends ConsumerState<ArtFrameBootstrapApp> {
+  AppOrientationPreference? _lastAppliedOrientation;
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final locale = ref.watch(localeControllerProvider);
     final appearanceSettings =
         ref.watch(appearanceSettingsControllerProvider).asData?.value ??
         const AppearanceSettings.defaults();
+
+    _syncOrientationPreference(appearanceSettings.orientationPreference);
 
     return MaterialApp.router(
       title: 'Art Frame',
@@ -29,5 +39,18 @@ class ArtFrameBootstrapApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     );
+  }
+
+  void _syncOrientationPreference(
+    AppOrientationPreference preference,
+  ) {
+    if (_lastAppliedOrientation == preference) {
+      return;
+    }
+    _lastAppliedOrientation = preference;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      applyOrientationPreference(preference);
+    });
   }
 }
