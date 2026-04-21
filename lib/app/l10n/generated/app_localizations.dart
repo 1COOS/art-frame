@@ -191,14 +191,104 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Playback settings'**
+  /// **'Settings'**
   String get settingsTitle;
 
   /// No description provided for @settingsBody.
   ///
   /// In en, this message translates to:
-  /// **'Locale and playback interval are stored locally so the minimal loop survives restarts.'**
+  /// **'Manage language, appearance, playback behavior, and key app information from one place.'**
   String get settingsBody;
+
+  /// No description provided for @settingsGeneralTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsGeneralTitle;
+
+  /// No description provided for @settingsGeneralBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the app language and theme mode used across the entire experience.'**
+  String get settingsGeneralBody;
+
+  /// No description provided for @settingsPlaybackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback'**
+  String get settingsPlaybackTitle;
+
+  /// No description provided for @settingsPlaybackBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust autoplay behavior and image rotation timing for the current viewing loop.'**
+  String get settingsPlaybackBody;
+
+  /// No description provided for @settingsAboutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAboutTitle;
+
+  /// No description provided for @settingsAboutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the installed version and open the main project, privacy, and feedback entry points.'**
+  String get settingsAboutBody;
+
+  /// No description provided for @themeModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme mode'**
+  String get themeModeLabel;
+
+  /// No description provided for @themeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
+  /// No description provided for @appVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get appVersionLabel;
+
+  /// No description provided for @settingsRepositoryLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Project repository'**
+  String get settingsRepositoryLink;
+
+  /// No description provided for @settingsPrivacyPolicyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get settingsPrivacyPolicyLink;
+
+  /// No description provided for @settingsFeedbackLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get settingsFeedbackLink;
+
+  /// No description provided for @settingsLinkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link right now.'**
+  String get settingsLinkOpenFailed;
 
   /// No description provided for @phoneLayout.
   ///

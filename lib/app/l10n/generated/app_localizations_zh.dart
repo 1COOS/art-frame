@@ -54,10 +54,55 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playbackBody => '当前选中的图源会自动轮播，也支持手动切换。';
 
   @override
-  String get settingsTitle => '播放设置';
+  String get settingsTitle => '设置中心';
 
   @override
-  String get settingsBody => '语言与播放间隔会本地保存，确保最小闭环重启后仍可恢复。';
+  String get settingsBody => '在一个页面中统一管理语言、外观、播放行为与关键应用信息。';
+
+  @override
+  String get settingsGeneralTitle => '通用';
+
+  @override
+  String get settingsGeneralBody => '配置整个应用共享的语言与主题模式。';
+
+  @override
+  String get settingsPlaybackTitle => '播放';
+
+  @override
+  String get settingsPlaybackBody => '调整自动播放行为与当前轮播链路的切换节奏。';
+
+  @override
+  String get settingsAboutTitle => '关于';
+
+  @override
+  String get settingsAboutBody => '查看当前版本，并打开项目主页、隐私政策与问题反馈入口。';
+
+  @override
+  String get themeModeLabel => '主题模式';
+
+  @override
+  String get themeModeSystem => '跟随系统';
+
+  @override
+  String get themeModeLight => '浅色';
+
+  @override
+  String get themeModeDark => '深色';
+
+  @override
+  String get appVersionLabel => '版本';
+
+  @override
+  String get settingsRepositoryLink => '项目仓库';
+
+  @override
+  String get settingsPrivacyPolicyLink => '隐私政策';
+
+  @override
+  String get settingsFeedbackLink => '问题反馈';
+
+  @override
+  String get settingsLinkOpenFailed => '暂时无法打开该链接。';
 
   @override
   String get phoneLayout => '手机';

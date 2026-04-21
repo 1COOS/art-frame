@@ -57,11 +57,59 @@ class AppLocalizationsEn extends AppLocalizations {
       'The selected source rotates automatically and can be manually browsed.';
 
   @override
-  String get settingsTitle => 'Playback settings';
+  String get settingsTitle => 'Settings';
 
   @override
   String get settingsBody =>
-      'Locale and playback interval are stored locally so the minimal loop survives restarts.';
+      'Manage language, appearance, playback behavior, and key app information from one place.';
+
+  @override
+  String get settingsGeneralTitle => 'General';
+
+  @override
+  String get settingsGeneralBody =>
+      'Choose the app language and theme mode used across the entire experience.';
+
+  @override
+  String get settingsPlaybackTitle => 'Playback';
+
+  @override
+  String get settingsPlaybackBody =>
+      'Adjust autoplay behavior and image rotation timing for the current viewing loop.';
+
+  @override
+  String get settingsAboutTitle => 'About';
+
+  @override
+  String get settingsAboutBody =>
+      'Check the installed version and open the main project, privacy, and feedback entry points.';
+
+  @override
+  String get themeModeLabel => 'Theme mode';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeDark => 'Dark';
+
+  @override
+  String get appVersionLabel => 'Version';
+
+  @override
+  String get settingsRepositoryLink => 'Project repository';
+
+  @override
+  String get settingsPrivacyPolicyLink => 'Privacy policy';
+
+  @override
+  String get settingsFeedbackLink => 'Feedback';
+
+  @override
+  String get settingsLinkOpenFailed => 'Could not open the link right now.';
 
   @override
   String get phoneLayout => 'Phone';
