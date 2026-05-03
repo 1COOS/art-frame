@@ -17,6 +17,7 @@ import '../application/source_import_actions.dart';
 import '../domain/media_item.dart';
 import '../domain/media_source.dart';
 import '../domain/network_source_config.dart';
+import '../application/network/smb_image_provider.dart';
 
 class SourcesPage extends ConsumerWidget {
   const SourcesPage({super.key});
@@ -336,6 +337,42 @@ class _SourcePreview extends ConsumerWidget {
     if (item.kind == MediaItemKind.remote) {
       final colorScheme = Theme.of(context).colorScheme;
       final textTheme = Theme.of(context).textTheme;
+
+      final config = source.networkConfig;
+      if (config?.protocol == NetworkSourceProtocol.smb) {
+        final smbBytes = ref.watch(
+          smbImageBytesProvider(
+            SmbImageRequest(config: config!, remotePath: item.path),
+          ),
+        );
+        return smbBytes.when(
+          data: (bytes) => Image.memory(
+            bytes,
+            width: 132,
+            height: 92,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return _buildRemoteError(colorScheme, textTheme);
+            },
+          ),
+          error: (error, stackTrace) => _buildRemoteError(colorScheme, textTheme),
+          loading: () => ColoredBox(
+            color: colorScheme.surfaceContainerHighest,
+            child: const SizedBox(
+              width: 132,
+              height: 92,
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2.2),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
       final bytes = item.tryDecodeBase64Path();
       if (bytes != null) {
         return Image.memory(
@@ -346,25 +383,6 @@ class _SourcePreview extends ConsumerWidget {
           errorBuilder: (context, error, stackTrace) {
             return _buildRemoteError(colorScheme, textTheme);
           },
-        );
-      }
-
-      final config = source.networkConfig;
-      if (config?.protocol == NetworkSourceProtocol.smb) {
-        return ColoredBox(
-          color: colorScheme.surfaceContainerHighest,
-          child: SizedBox(
-            width: 132,
-            height: 92,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.storage_outlined),
-                const SizedBox(height: 8),
-                Text('SMB', style: textTheme.labelMedium),
-              ],
-            ),
-          ),
         );
       }
 

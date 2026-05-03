@@ -268,17 +268,6 @@ class _PlaybackFrame extends ConsumerWidget {
     }
 
     if (item.kind == MediaItemKind.remote) {
-      final memoryBytes = item.tryDecodeBase64Path();
-      if (memoryBytes != null) {
-        return Image.memory(
-          memoryBytes,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return const _RemoteErrorPlaceholder();
-          },
-        );
-      }
-
       final config = networkConfig;
       if (config?.protocol == NetworkSourceProtocol.smb) {
         final smbBytes = ref.watch(
@@ -299,6 +288,17 @@ class _PlaybackFrame extends ConsumerWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: const Center(child: CircularProgressIndicator()),
           ),
+        );
+      }
+
+      final memoryBytes = item.tryDecodeBase64Path();
+      if (memoryBytes != null) {
+        return Image.memory(
+          memoryBytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const _RemoteErrorPlaceholder();
+          },
         );
       }
 

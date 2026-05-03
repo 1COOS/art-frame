@@ -71,20 +71,14 @@ class NetworkSourceConfig {
   Uri get directoryUri {
     final normalizedPath = _normalizedRemotePath;
     return Uri(
-      scheme: secure ? 'https' : 'http',
+      scheme: _stableScheme,
       host: host,
       port: port,
       path: normalizedPath,
     );
   }
 
-  String get smbPath {
-    if (protocol != NetworkSourceProtocol.smb) {
-      return _normalizedRemotePath;
-    }
-    final normalizedPath = _normalizedRemotePath;
-    return normalizedPath == '/' ? '/' : normalizedPath;
-  }
+  String get smbPath => _normalizedRemotePath;
 
   String get endpointLabel {
     final normalizedPath = _normalizedRemotePath;

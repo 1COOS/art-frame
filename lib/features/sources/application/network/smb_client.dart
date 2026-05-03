@@ -10,7 +10,7 @@ import '../../domain/media_item.dart';
 import '../../domain/network_source_config.dart';
 import '../../../../core/utils/image_format.dart';
 
-const bool _enableSmbDebugLogs = kDebugMode;
+const bool _enableSmbDebugLogs = false;
 
 @immutable
 class SmbDirectoryEntry {
@@ -56,6 +56,7 @@ class SmbClient {
   final SmbFileReader? _readFileOverride;
   final Map<String, Future<Uint8List>> _inflightReads = {};
   final Map<String, Future<void>> _hostReadChains = {};
+  final Map<String, SmbConnect> _cachedConnections = {};
   int _nextRequestId = 1;
 
   Future<void> validate(NetworkSourceConfig config) async {
@@ -336,50 +337,113 @@ class SmbClient {
     int requestId,
   ) async {
     final stopwatch = Stopwatch()..start();
+    try {
+      return await _attemptReadFileBytes(
+        config, normalizedPath, requestId, stopwatch,
+      );
+    } catch (firstError) {
+      if (!_shouldRetry(firstError)) {
+        rethrow;
+      }
+      _log('read.retry', [
+        'requestId：$requestId',
+        'normalizedPath：$normalizedPath',
+        'firstError：${firstError.runtimeType}',
+        'firstErrorDetail：${firstError.toString().trim()}',
+        'elapsedMs：${stopwatch.elapsedMilliseconds}',
+      ]);
+      await _discardConnection(config, requestId: requestId);
+      return _attemptReadFileBytes(
+        config, normalizedPath, requestId, stopwatch,
+      );
+    }
+  }
+
+  static bool _shouldRetry(Object error) {
+    if (error is! SmbException) return false;
+    final msg = error.message;
+    if (msg.contains('仅支持默认 445 端口')) return false;
+    if (msg.startsWith('SMB 文件不存在')) return false;
+    if (msg.startsWith('SMB 路径不存在')) return false;
+    if (msg.startsWith('SMB 路径不是目录')) return false;
+    return true;
+  }
+
+  Future<SmbConnect> _acquireConnection(
+    NetworkSourceConfig config, {
+    int? requestId,
+  }) async {
+    final hostKey = _hostReadKey(config);
+    final cached = _cachedConnections[hostKey];
+    if (cached != null) {
+      _log('connect.reuse', [
+        if (requestId != null) 'requestId：$requestId',
+        'hostKey：$hostKey',
+        'connectType：${cached.runtimeType}',
+        'connectId：${identityHashCode(cached)}',
+      ]);
+      return cached;
+    }
+    final connect = await _connect(config, requestId: requestId);
+    _cachedConnections[hostKey] = connect;
+    return connect;
+  }
+
+  Future<void> _discardConnection(
+    NetworkSourceConfig config, {
+    int? requestId,
+  }) async {
+    final hostKey = _hostReadKey(config);
+    final connect = _cachedConnections.remove(hostKey);
+    if (connect == null) return;
+    _log('connect.discard', [
+      if (requestId != null) 'requestId：$requestId',
+      'hostKey：$hostKey',
+      'connectType：${connect.runtimeType}',
+      'connectId：${identityHashCode(connect)}',
+    ]);
+    try {
+      await connect.close();
+    } catch (_) {}
+  }
+
+  Future<Uint8List> _attemptReadFileBytes(
+    NetworkSourceConfig config,
+    String normalizedPath,
+    int requestId,
+    Stopwatch stopwatch,
+  ) async {
     final connect = await _guardLibraryCall(
-      () => _connect(config, requestId: requestId),
+      () => _acquireConnection(config, requestId: requestId),
       config,
       stage: '建立连接',
       normalizedPath: normalizedPath,
     );
     final targetFile = _targetFile(normalizedPath);
-    try {
-      _log('read.lookup.start', [
-        'requestId：$requestId',
-        'connectType：${connect.runtimeType}',
-        'connectId：${identityHashCode(connect)}',
-        'normalizedPath：$normalizedPath',
-        'target.share：${targetFile.share}',
-        'target.uncPath：${targetFile.uncPath}',
-        'target.name：${targetFile.name}',
-      ]);
-      return _readFileBytes(connect, targetFile, config, normalizedPath, requestId, stopwatch);
-    } on SmbException {
-      rethrow;
-    } catch (error) {
-      final fileForDiagnostics = await _loadDiagnosticFile(
-        config,
-        normalizedPath,
-        requestId,
-      );
-      throw SmbException(
-        _messageForUnexpectedError(
-          error,
-          config,
-          stage: '读取 SMB 文件',
-          normalizedPath: normalizedPath,
-          file: fileForDiagnostics,
-        ),
-      );
-    } finally {
-      _log('read.connect.close', [
-        'requestId：$requestId',
-        'connectType：${connect.runtimeType}',
-        'connectId：${identityHashCode(connect)}',
-        'elapsedMs：${stopwatch.elapsedMilliseconds}',
-      ]);
-      await connect.close();
-    }
+    _log('read.lookup.start', [
+      'requestId：$requestId',
+      'connectType：${connect.runtimeType}',
+      'connectId：${identityHashCode(connect)}',
+      'normalizedPath：$normalizedPath',
+      'target.share：${targetFile.share}',
+      'target.uncPath：${targetFile.uncPath}',
+      'target.name：${targetFile.name}',
+    ]);
+    return _readFileBytes(connect, targetFile, config, normalizedPath, requestId, stopwatch);
+  }
+
+  SmbFile _targetFile(String normalizedPath) {
+    return SmbFile(
+      normalizedPath,
+      SmbConnect.getUncPath(normalizedPath),
+      SmbConnect.getShare(normalizedPath),
+      0,
+      0,
+      0,
+      0,
+      0,
+      true,
+    );
   }
 
   Future<SmbConnect> _connect(
@@ -464,7 +528,7 @@ class SmbClient {
         normalizedPath: normalizedPath,
         file: file,
       );
-      final builder = BytesBuilder(copy: false);
+      final builder = BytesBuilder();
       await for (final chunk in reader) {
         builder.add(chunk);
       }
@@ -558,19 +622,6 @@ class SmbClient {
     }
   }
 
-  SmbFile _targetFile(String normalizedPath) {
-    return SmbFile(
-      normalizedPath,
-      SmbConnect.getUncPath(normalizedPath),
-      SmbConnect.getShare(normalizedPath),
-      0,
-      0,
-      0,
-      0,
-      0,
-      true,
-    );
-  }
 
   Future<SmbFile?> _loadDiagnosticFile(
     NetworkSourceConfig config,

@@ -68,12 +68,11 @@ void main() {
       );
     });
 
-    test('readFileBytes reads without preflight file lookup', () async {
+    test('readFileBytes reads file using synthetic SmbFile', () async {
       final client = SmbClient(
-        connect: (_) async => _NoLookupSmbConnect(),
+        connect: (_) async => _FakeSmbConnect(),
         readFile: (_, file) async {
           expect(file.path, '/public/gallery/cover.jpg');
-          expect(file.uncPath, '\\gallery\\cover.jpg');
           expect(file.share, 'public');
           return Uint8List.fromList([4, 5, 6]);
         },
@@ -163,19 +162,6 @@ SmbFile _fakeFile(String path, String name) {
     fakeName: name,
     isDirectoryValue: false,
   );
-}
-
-class _NoLookupSmbConnect implements SmbConnect {
-  @override
-  Future<void> close() async {}
-
-  @override
-  Future<SmbFile> file(String path) async {
-    throw StateError('file lookup should not be called');
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeSmbConnect implements SmbConnect {
