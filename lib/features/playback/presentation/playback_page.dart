@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +87,8 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
                       Text(l10n.playbackEmptyBody),
                       const SizedBox(height: 20),
                       FilledButton(
-                        onPressed: () => context.go(AppDestination.sources.path),
+                        onPressed: () =>
+                            context.go(AppDestination.sources.path),
                         child: Text(l10n.goToSources),
                       ),
                     ],
@@ -101,6 +103,7 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
 
     final normalizedIndex = _normalizeIndex(source.items.length);
     final currentItem = source.items[normalizedIndex];
+    final nextItem = _nextRemoteItem(source.items, normalizedIndex);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -110,6 +113,7 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
           children: [
             _PlaybackFrame(
               item: currentItem,
+              nextItem: nextItem,
               headers:
                   source.networkConfig?.authorizationHeaders ??
                   const <String, String>{},
@@ -132,7 +136,12 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
                     child: const Icon(Icons.arrow_back),
                   ),
                   const Spacer(),
-                  _OverlayBadge(value: l10n.playbackCounter(normalizedIndex + 1, source.items.length)),
+                  _OverlayBadge(
+                    value: l10n.playbackCounter(
+                      normalizedIndex + 1,
+                      source.items.length,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -147,9 +156,9 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
                       source.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white70,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(color: Colors.white70),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -191,6 +200,15 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
     }
 
     return _currentIndex;
+  }
+
+  MediaItem? _nextRemoteItem(List<MediaItem> items, int currentIndex) {
+    if (items.length < 2) {
+      return null;
+    }
+
+    final nextItem = items[(currentIndex + 1) % items.length];
+    return nextItem.kind == MediaItemKind.remote ? nextItem : null;
   }
 
   void _configureTimer({
@@ -246,84 +264,306 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
   }
 }
 
-class _PlaybackFrame extends ConsumerWidget {
+class _PlaybackFrame extends ConsumerStatefulWidget {
   const _PlaybackFrame({
     required this.item,
+    required this.nextItem,
     required this.headers,
     required this.networkConfig,
   });
 
   final MediaItem item;
+  final MediaItem? nextItem;
   final Map<String, String> headers;
   final NetworkSourceConfig? networkConfig;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_PlaybackFrame> createState() => _PlaybackFrameState();
+}
+
+class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
+  _ResolvedPlaybackImage? _displayedImage;
+  ImageStream? _pendingImageStream;
+  ImageStreamListener? _pendingImageListener;
+  int _loadGeneration = 0;
+  bool _didLoadInitialImage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prefetchNextImage();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didLoadInitialImage) {
+      return;
+    }
+    _didLoadInitialImage = true;
+    _loadCurrentImage();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PlaybackFrame oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.id != widget.item.id ||
+        oldWidget.networkConfig?.stableId != widget.networkConfig?.stableId) {
+      _loadCurrentImage();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prefetchNextImage();
+    });
+  }
+
+  @override
+  void dispose() {
+    _disposePendingImageStream();
+    super.dispose();
+  }
+
+  void _disposePendingImageStream() {
+    final stream = _pendingImageStream;
+    final listener = _pendingImageListener;
+    if (stream != null && listener != null) {
+      stream.removeListener(listener);
+    }
+    _pendingImageStream = null;
+    _pendingImageListener = null;
+  }
+
+  void _setDisplayedImage(_ResolvedPlaybackImage image) {
+    if (_displayedImage?.cacheKey == image.cacheKey) {
+      return;
+    }
+    if (!mounted) {
+      _displayedImage = image;
+      return;
+    }
+    setState(() {
+      _displayedImage = image;
+    });
+  }
+
+  void _loadCurrentImage() {
+    _disposePendingImageStream();
+    final generation = ++_loadGeneration;
+    final resolved = _resolveSynchronousImage(widget.item);
+    if (resolved != null) {
+      _setDisplayedImage(resolved);
+      return;
+    }
+
+    final config = widget.networkConfig;
+    if (widget.item.kind != MediaItemKind.remote || config == null) {
+      return;
+    }
+
+    if (config.protocol == NetworkSourceProtocol.smb) {
+      final request = SmbImageRequest(
+        config: config,
+        remotePath: widget.item.path,
+      );
+      ref
+          .read(smbImageBytesProvider(request).future)
+          .then((bytes) {
+            if (!mounted || generation != _loadGeneration) {
+              return;
+            }
+            _setDisplayedImage(
+              _ResolvedPlaybackImage(
+                cacheKey: 'smb:${request.cacheKey}',
+                child: _buildMemoryImage(bytes),
+              ),
+            );
+          })
+          .catchError((_) {
+            if (!mounted || generation != _loadGeneration) {
+              return;
+            }
+            _setDisplayedImage(
+              const _ResolvedPlaybackImage(
+                cacheKey: 'remote-error',
+                child: _RemoteErrorPlaceholder(),
+              ),
+            );
+          });
+      return;
+    }
+
+    final provider = NetworkImage(
+      widget.item.path,
+      headers: widget.headers.isEmpty ? null : widget.headers,
+    );
+    final stream = provider.resolve(createLocalImageConfiguration(context));
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener(
+      (image, synchronousCall) {
+        if (!mounted || generation != _loadGeneration) {
+          return;
+        }
+        _disposePendingImageStream();
+        _setDisplayedImage(
+          _ResolvedPlaybackImage(
+            cacheKey: 'network:${widget.item.path}',
+            child: Image(
+              image: provider,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+              errorBuilder: (context, error, stackTrace) {
+                return const _RemoteErrorPlaceholder();
+              },
+            ),
+          ),
+        );
+      },
+      onError: (error, stackTrace) {
+        if (!mounted || generation != _loadGeneration) {
+          return;
+        }
+        _disposePendingImageStream();
+        _setDisplayedImage(
+          const _ResolvedPlaybackImage(
+            cacheKey: 'remote-error',
+            child: _RemoteErrorPlaceholder(),
+          ),
+        );
+      },
+    );
+    _pendingImageStream = stream;
+    _pendingImageListener = listener;
+    stream.addListener(listener);
+  }
+
+  _ResolvedPlaybackImage? _resolveSynchronousImage(MediaItem item) {
     if (item.kind == MediaItemKind.file) {
-      return buildLocalImage(item.path);
-    }
-
-    if (item.kind == MediaItemKind.mediaAsset) {
-      return buildMediaAssetImage(item.path, isOriginal: true);
-    }
-
-    if (item.kind == MediaItemKind.remote) {
-      final config = networkConfig;
-      if (config?.protocol == NetworkSourceProtocol.smb) {
-        final smbBytes = ref.watch(
-          smbImageBytesProvider(
-            SmbImageRequest(config: config!, remotePath: item.path),
-          ),
-        );
-        return smbBytes.when(
-          data: (bytes) => Image.memory(
-            bytes,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return const _RemoteErrorPlaceholder();
-            },
-          ),
-          error: (error, stackTrace) => const _RemoteErrorPlaceholder(),
-          loading: () => ColoredBox(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Center(child: CircularProgressIndicator()),
-          ),
-        );
-      }
-
-      final memoryBytes = item.tryDecodeBase64Path();
-      if (memoryBytes != null) {
-        return Image.memory(
-          memoryBytes,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return const _RemoteErrorPlaceholder();
-          },
-        );
-      }
-
-      return Image.network(
-        item.path,
-        headers: headers.isEmpty ? null : headers,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return const _RemoteErrorPlaceholder();
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          }
-          return ColoredBox(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Center(child: CircularProgressIndicator()),
-          );
-        },
+      return _ResolvedPlaybackImage(
+        cacheKey: 'file:${item.path}',
+        child: buildLocalImage(item.path),
       );
     }
 
-    return Image.asset(item.assetPath, fit: BoxFit.cover);
+    if (item.kind == MediaItemKind.mediaAsset) {
+      return _ResolvedPlaybackImage(
+        cacheKey: 'asset:${item.path}',
+        child: buildMediaAssetImage(item.path, isOriginal: true),
+      );
+    }
+
+    if (item.kind == MediaItemKind.asset) {
+      return _ResolvedPlaybackImage(
+        cacheKey: 'bundle:${item.assetPath}',
+        child: Image.asset(item.assetPath, fit: BoxFit.cover),
+      );
+    }
+
+    if (item.kind != MediaItemKind.remote) {
+      return null;
+    }
+
+    final config = widget.networkConfig;
+    if (config?.protocol == NetworkSourceProtocol.smb) {
+      final request = SmbImageRequest(config: config!, remotePath: item.path);
+      final bytes = ref.read(smbImageMemoryCacheProvider).get(request);
+      if (bytes == null) {
+        return null;
+      }
+      return _ResolvedPlaybackImage(
+        cacheKey: 'smb:${request.cacheKey}',
+        child: _buildMemoryImage(bytes),
+      );
+    }
+
+    final memoryBytes = item.tryDecodeBase64Path();
+    if (memoryBytes == null) {
+      return null;
+    }
+    return _ResolvedPlaybackImage(
+      cacheKey: 'memory:${item.id}',
+      child: _buildMemoryImage(memoryBytes),
+    );
   }
 
+  Widget _buildMemoryImage(Uint8List bytes) {
+    return Image.memory(
+      bytes,
+      fit: BoxFit.cover,
+      gaplessPlayback: true,
+      errorBuilder: (context, error, stackTrace) {
+        return const _RemoteErrorPlaceholder();
+      },
+    );
+  }
+
+  Future<void> _prefetchNextImage() async {
+    final nextItem = widget.nextItem;
+    if (!mounted || nextItem == null || nextItem.kind != MediaItemKind.remote) {
+      return;
+    }
+
+    final config = widget.networkConfig;
+    if (config?.protocol == NetworkSourceProtocol.smb) {
+      final request = SmbImageRequest(
+        config: config!,
+        remotePath: nextItem.path,
+      );
+      final cache = ref.read(smbImageMemoryCacheProvider);
+      if (cache.get(request) != null) {
+        return;
+      }
+      try {
+        final bytes = await ref.read(smbImageBytesProvider(request).future);
+        if (!mounted) {
+          return;
+        }
+        cache.put(request, bytes);
+      } catch (_) {}
+      return;
+    }
+
+    final memoryBytes = nextItem.tryDecodeBase64Path();
+    if (memoryBytes != null) {
+      return;
+    }
+
+    final provider = NetworkImage(
+      nextItem.path,
+      headers: widget.headers.isEmpty ? null : widget.headers,
+    );
+    try {
+      await precacheImage(provider, context);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final displayedImage = _displayedImage;
+    if (displayedImage == null) {
+      return ColoredBox(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 180),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeOut,
+      child: KeyedSubtree(
+        key: ValueKey(displayedImage.cacheKey),
+        child: displayedImage.child,
+      ),
+    );
+  }
+}
+
+class _ResolvedPlaybackImage {
+  const _ResolvedPlaybackImage({required this.cacheKey, required this.child});
+
+  final String cacheKey;
+  final Widget child;
 }
 
 class _RemoteErrorPlaceholder extends StatelessWidget {
@@ -333,9 +573,7 @@ class _RemoteErrorPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: const Center(
-        child: Icon(Icons.cloud_off_outlined, size: 64),
-      ),
+      child: const Center(child: Icon(Icons.cloud_off_outlined, size: 64)),
     );
   }
 }
@@ -356,9 +594,9 @@ class _OverlayBadge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Text(
           value,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: Colors.white,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(color: Colors.white),
         ),
       ),
     );

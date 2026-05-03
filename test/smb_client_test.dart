@@ -38,35 +38,47 @@ void main() {
       expect(result.directories.first.name, 'albums');
       expect(result.directories.first.path, '/public/gallery/albums');
       expect(result.items, hasLength(2));
-      expect(result.items.map((item) => item.title), ['cover.jpg', 'poster.png']);
-      expect(result.items.every((item) => item.kind == MediaItemKind.remote), isTrue);
+      expect(result.items.map((item) => item.title), [
+        'cover.jpg',
+        'poster.png',
+      ]);
+      expect(
+        result.items.every((item) => item.kind == MediaItemKind.remote),
+        isTrue,
+      );
     });
 
-    test('readFileBytes rejects non-default ports for current implementation', () async {
-      const customPortConfig = NetworkSourceConfig(
-        protocol: NetworkSourceProtocol.smb,
-        host: 'demo.local',
-        remotePath: '/public/gallery',
-        port: 1445,
-        username: 'demo',
-        password: 'secret',
-      );
+    test(
+      'readFileBytes rejects non-default ports for current implementation',
+      () async {
+        const customPortConfig = NetworkSourceConfig(
+          protocol: NetworkSourceProtocol.smb,
+          host: 'demo.local',
+          remotePath: '/public/gallery',
+          port: 1445,
+          username: 'demo',
+          password: 'secret',
+        );
 
-      final client = SmbClient(
-        connect: (_) async => throw StateError('should not connect'),
-      );
+        final client = SmbClient(
+          connect: (_) async => throw StateError('should not connect'),
+        );
 
-      await expectLater(
-        () => client.readFileBytes(customPortConfig, '/public/gallery/cover.jpg'),
-        throwsA(
-          isA<SmbException>().having(
-            (error) => error.message,
-            'message',
-            contains('仅支持默认 445 端口'),
+        await expectLater(
+          () => client.readFileBytes(
+            customPortConfig,
+            '/public/gallery/cover.jpg',
           ),
-        ),
-      );
-    });
+          throwsA(
+            isA<SmbException>().having(
+              (error) => error.message,
+              'message',
+              contains('仅支持默认 445 端口'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('readFileBytes reads file using synthetic SmbFile', () async {
       final client = SmbClient(
@@ -78,7 +90,10 @@ void main() {
         },
       );
 
-      final bytes = await client.readFileBytes(config, '/public/gallery/cover.jpg');
+      final bytes = await client.readFileBytes(
+        config,
+        '/public/gallery/cover.jpg',
+      );
 
       expect(bytes, [4, 5, 6]);
     });
@@ -119,10 +134,9 @@ void main() {
       expect(await second, [2]);
     });
 
-    test('readFileBytes de-duplicates concurrent reads for same path', () async {
+    test('readFileBytes reuses cached bytes for repeated requests', () async {
       var connectCount = 0;
       var readCount = 0;
-      final completer = Completer<Uint8List>();
       final client = SmbClient(
         connect: (_) async {
           connectCount += 1;
@@ -131,37 +145,114 @@ void main() {
         readFile: (_, file) async {
           readCount += 1;
           expect(file.path, '/public/gallery/cover.jpg');
-          return completer.future;
+          return Uint8List.fromList([9, 8, 7]);
         },
       );
 
-      final first = client.readFileBytes(config, '/public/gallery/cover.jpg');
-      final second = client.readFileBytes(config, '/public/gallery/cover.jpg');
+      expect(await client.readFileBytes(config, '/public/gallery/cover.jpg'), [
+        9,
+        8,
+        7,
+      ]);
+      expect(await client.readFileBytes(config, '/public/gallery/cover.jpg'), [
+        9,
+        8,
+        7,
+      ]);
 
-      completer.complete(Uint8List.fromList([7, 8, 9]));
-
-      expect(await first, [7, 8, 9]);
-      expect(await second, [7, 8, 9]);
       expect(connectCount, 1);
       expect(readCount, 1);
     });
+
+    test('readFileBytes prefetch warms memory cache', () async {
+      var readCount = 0;
+      final client = SmbClient(
+        connect: (_) async => _FakeSmbConnect(),
+        readFile: (_, file) async {
+          readCount += 1;
+          expect(file.path, '/public/gallery/prefetch.jpg');
+          return Uint8List.fromList([6, 5, 4]);
+        },
+      );
+
+      await client.prefetchFileBytes(config, '/public/gallery/prefetch.jpg');
+      expect(
+        await client.readFileBytes(config, '/public/gallery/prefetch.jpg'),
+        [6, 5, 4],
+      );
+
+      expect(readCount, 1);
+    });
+
+    test('readFileBytes evicts least recently used cached bytes', () async {
+      final reads = <String>[];
+      final client = SmbClient(
+        connect: (_) async => _FakeSmbConnect(),
+        readFile: (_, file) async {
+          reads.add(file.path);
+          return Uint8List.fromList([reads.length]);
+        },
+        maxCacheEntries: 1,
+      );
+
+      expect(await client.readFileBytes(config, '/public/gallery/first.jpg'), [
+        1,
+      ]);
+      expect(await client.readFileBytes(config, '/public/gallery/second.jpg'), [
+        2,
+      ]);
+      expect(await client.readFileBytes(config, '/public/gallery/first.jpg'), [
+        3,
+      ]);
+
+      expect(reads, [
+        '/public/gallery/first.jpg',
+        '/public/gallery/second.jpg',
+        '/public/gallery/first.jpg',
+      ]);
+    });
+
+    test(
+      'readFileBytes de-duplicates concurrent reads for same path',
+      () async {
+        var connectCount = 0;
+        var readCount = 0;
+        final completer = Completer<Uint8List>();
+        final client = SmbClient(
+          connect: (_) async {
+            connectCount += 1;
+            return _FakeSmbConnect();
+          },
+          readFile: (_, file) async {
+            readCount += 1;
+            expect(file.path, '/public/gallery/cover.jpg');
+            return completer.future;
+          },
+        );
+
+        final first = client.readFileBytes(config, '/public/gallery/cover.jpg');
+        final second = client.readFileBytes(
+          config,
+          '/public/gallery/cover.jpg',
+        );
+
+        completer.complete(Uint8List.fromList([7, 8, 9]));
+
+        expect(await first, [7, 8, 9]);
+        expect(await second, [7, 8, 9]);
+        expect(connectCount, 1);
+        expect(readCount, 1);
+      },
+    );
   });
 }
 
 SmbFile _fakeDirectory(String path, String name) {
-  return _FakeSmbFile(
-    path: path,
-    fakeName: name,
-    isDirectoryValue: true,
-  );
+  return _FakeSmbFile(path: path, fakeName: name, isDirectoryValue: true);
 }
 
 SmbFile _fakeFile(String path, String name) {
-  return _FakeSmbFile(
-    path: path,
-    fakeName: name,
-    isDirectoryValue: false,
-  );
+  return _FakeSmbFile(path: path, fakeName: name, isDirectoryValue: false);
 }
 
 class _FakeSmbConnect implements SmbConnect {
@@ -177,7 +268,10 @@ class _FakeSmbConnect implements SmbConnect {
   }
 
   @override
-  Future<List<SmbFile>> listFiles(SmbFile folder, [String wildcard = '*']) async {
+  Future<List<SmbFile>> listFiles(
+    SmbFile folder, [
+    String wildcard = '*',
+  ]) async {
     throw UnimplementedError();
   }
 
@@ -191,16 +285,16 @@ class _FakeSmbFile extends SmbFile {
     required this.fakeName,
     required this.isDirectoryValue,
   }) : super(
-          path,
-          path.replaceAll('/', '\\'),
-          'public',
-          0,
-          0,
-          0,
-          isDirectoryValue ? 16 : 0,
-          0,
-          true,
-        );
+         path,
+         path.replaceAll('/', '\\'),
+         'public',
+         0,
+         0,
+         0,
+         isDirectoryValue ? 16 : 0,
+         0,
+         true,
+       );
 
   final String fakeName;
   final bool isDirectoryValue;

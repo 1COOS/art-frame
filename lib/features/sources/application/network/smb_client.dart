@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -32,38 +33,42 @@ class SmbBrowseResult {
   final String normalizedPath;
 }
 
-typedef SmbConnectFactory = Future<SmbConnect> Function(NetworkSourceConfig config);
-typedef SmbFileLister = Future<List<SmbFile>> Function(
-  SmbConnect connect,
-  SmbFile folder,
-);
-typedef SmbFileReader = Future<Uint8List> Function(
-  SmbConnect connect,
-  SmbFile file,
-);
+typedef SmbConnectFactory =
+    Future<SmbConnect> Function(NetworkSourceConfig config);
+typedef SmbFileLister =
+    Future<List<SmbFile>> Function(SmbConnect connect, SmbFile folder);
+typedef SmbFileReader =
+    Future<Uint8List> Function(SmbConnect connect, SmbFile file);
 
 class SmbClient {
   SmbClient({
     SmbConnectFactory? connect,
     SmbFileLister? listFiles,
     SmbFileReader? readFile,
+    int maxCacheEntries = 12,
   }) : _connectOverride = connect,
        _listFilesOverride = listFiles,
-       _readFileOverride = readFile;
+       _readFileOverride = readFile,
+       _maxCacheEntries = maxCacheEntries;
 
   final SmbConnectFactory? _connectOverride;
   final SmbFileLister? _listFilesOverride;
   final SmbFileReader? _readFileOverride;
+  final int _maxCacheEntries;
   final Map<String, Future<Uint8List>> _inflightReads = {};
   final Map<String, Future<void>> _hostReadChains = {};
   final Map<String, SmbConnect> _cachedConnections = {};
+  final LinkedHashMap<String, Uint8List> _memoryCache = LinkedHashMap();
   int _nextRequestId = 1;
 
   Future<void> validate(NetworkSourceConfig config) async {
     final connect = await _connect(config);
     try {
       final root = await connect.file(config.smbPath);
-      _log('validate.root', _diagnosticLines(config, normalizedPath: config.smbPath, file: root));
+      _log(
+        'validate.root',
+        _diagnosticLines(config, normalizedPath: config.smbPath, file: root),
+      );
       if (!root.isExists) {
         throw const SmbException('SMB 路径不存在，请检查共享名和目录');
       }
@@ -73,7 +78,9 @@ class SmbClient {
     } on SmbException {
       rethrow;
     } catch (error) {
-      throw SmbException(_messageForUnexpectedError(error, config, stage: '连接验证'));
+      throw SmbException(
+        _messageForUnexpectedError(error, config, stage: '连接验证'),
+      );
     } finally {
       await connect.close();
     }
@@ -83,7 +90,10 @@ class SmbClient {
     final connect = await _connect(config);
     try {
       final folder = await connect.file(config.smbPath);
-      _log('browse.root', _diagnosticLines(config, normalizedPath: config.smbPath, file: folder));
+      _log(
+        'browse.root',
+        _diagnosticLines(config, normalizedPath: config.smbPath, file: folder),
+      );
       if (!folder.isExists) {
         throw const SmbException('SMB 路径不存在，请检查共享名和目录');
       }
@@ -125,10 +135,12 @@ class SmbClient {
       }
 
       directories.sort(
-        (left, right) => left.name.toLowerCase().compareTo(right.name.toLowerCase()),
+        (left, right) =>
+            left.name.toLowerCase().compareTo(right.name.toLowerCase()),
       );
       items.sort(
-        (left, right) => left.title.toLowerCase().compareTo(right.title.toLowerCase()),
+        (left, right) =>
+            left.title.toLowerCase().compareTo(right.title.toLowerCase()),
       );
 
       return SmbBrowseResult(
@@ -139,7 +151,9 @@ class SmbClient {
     } on SmbException {
       rethrow;
     } catch (error) {
-      throw SmbException(_messageForUnexpectedError(error, config, stage: '目录浏览'));
+      throw SmbException(
+        _messageForUnexpectedError(error, config, stage: '目录浏览'),
+      );
     } finally {
       await connect.close();
     }
@@ -160,6 +174,16 @@ class SmbClient {
       'normalizedPath：$normalizedPath',
       'inflightReads：${_inflightReads.length}',
     ]);
+    final cachedBytes = _takeCachedBytes(readKey);
+    if (cachedBytes != null) {
+      _log('read.memoryCache.hit', [
+        'requestId：$requestId',
+        'key：$readKey',
+        'normalizedPath：$normalizedPath',
+        'bytes：${cachedBytes.length}',
+      ]);
+      return SynchronousFuture(cachedBytes);
+    }
     final inflight = _inflightReads[readKey];
     if (inflight != null) {
       _log('read.dedup.hit', [
@@ -170,11 +194,15 @@ class SmbClient {
       return inflight;
     }
 
-    final future = _serializeRead(
-      hostKey,
-      requestId,
-      () => _readFileBytesInternal(config, normalizedPath, requestId),
-    );
+    final future =
+        _serializeRead(
+          hostKey,
+          requestId,
+          () => _readFileBytesInternal(config, normalizedPath, requestId),
+        ).then((bytes) {
+          _storeCachedBytes(readKey, bytes);
+          return bytes;
+        });
     _inflightReads[readKey] = future;
     return future.whenComplete(() {
       if (identical(_inflightReads[readKey], future)) {
@@ -188,6 +216,36 @@ class SmbClient {
         'inflightReads：${_inflightReads.length}',
       ]);
     });
+  }
+
+  Future<void> prefetchFileBytes(
+    NetworkSourceConfig config,
+    String remotePath,
+  ) async {
+    try {
+      await readFileBytes(config, remotePath);
+    } catch (_) {}
+  }
+
+  Uint8List? _takeCachedBytes(String readKey) {
+    final cached = _memoryCache.remove(readKey);
+    if (cached == null) {
+      return null;
+    }
+    _memoryCache[readKey] = cached;
+    return cached;
+  }
+
+  void _storeCachedBytes(String readKey, Uint8List bytes) {
+    _memoryCache.remove(readKey);
+    _memoryCache[readKey] = bytes;
+    while (_memoryCache.length > _maxCacheEntries) {
+      _memoryCache.remove(_memoryCache.keys.first);
+    }
+  }
+
+  String _cacheKey(NetworkSourceConfig config, String normalizedPath) {
+    return '${config.stableId}:$normalizedPath';
   }
 
   String _hostReadKey(NetworkSourceConfig config) {
@@ -206,10 +264,7 @@ class SmbClient {
   ) {
     final previous = _hostReadChains[hostKey];
     if (previous != null) {
-      _log('read.hostQueue.wait', [
-        'requestId：$requestId',
-        'hostKey：$hostKey',
-      ]);
+      _log('read.hostQueue.wait', ['requestId：$requestId', 'hostKey：$hostKey']);
     }
 
     final gate = Completer<void>();
@@ -339,7 +394,10 @@ class SmbClient {
     final stopwatch = Stopwatch()..start();
     try {
       return await _attemptReadFileBytes(
-        config, normalizedPath, requestId, stopwatch,
+        config,
+        normalizedPath,
+        requestId,
+        stopwatch,
       );
     } catch (firstError) {
       if (!_shouldRetry(firstError)) {
@@ -354,7 +412,10 @@ class SmbClient {
       ]);
       await _discardConnection(config, requestId: requestId);
       return _attemptReadFileBytes(
-        config, normalizedPath, requestId, stopwatch,
+        config,
+        normalizedPath,
+        requestId,
+        stopwatch,
       );
     }
   }
@@ -429,7 +490,14 @@ class SmbClient {
       'target.uncPath：${targetFile.uncPath}',
       'target.name：${targetFile.name}',
     ]);
-    return _readFileBytes(connect, targetFile, config, normalizedPath, requestId, stopwatch);
+    return _readFileBytes(
+      connect,
+      targetFile,
+      config,
+      normalizedPath,
+      requestId,
+      stopwatch,
+    );
   }
 
   SmbFile _targetFile(String normalizedPath) {
@@ -541,7 +609,9 @@ class SmbClient {
         'bytes：${builder.length}',
         'elapsedMs：${stopwatch.elapsedMilliseconds}',
       ]);
-      return builder.takeBytes();
+      final bytes = builder.takeBytes();
+      _storeCachedBytes(_cacheKey(config, normalizedPath), bytes);
+      return bytes;
     } catch (openReadError) {
       final fileForDiagnostics = await _loadDiagnosticFile(
         config,
@@ -569,7 +639,11 @@ class SmbClient {
           'connectId：${identityHashCode(connect)}',
           'fileId：${identityHashCode(file)}',
           'elapsedMs：${stopwatch.elapsedMilliseconds}',
-          ..._diagnosticLines(config, normalizedPath: normalizedPath, file: fileForDiagnostics ?? file),
+          ..._diagnosticLines(
+            config,
+            normalizedPath: normalizedPath,
+            file: fileForDiagnostics ?? file,
+          ),
         ]);
         final randomAccessFile = await _guardLibraryCall(
           () => connect.open(file, mode: FileMode.read),
@@ -590,6 +664,7 @@ class SmbClient {
             'bytes：${bytes.length}',
             'elapsedMs：${stopwatch.elapsedMilliseconds}',
           ]);
+          _storeCachedBytes(_cacheKey(config, normalizedPath), bytes);
           return bytes;
         } finally {
           await _closeRandomAccessSafely(
@@ -621,7 +696,6 @@ class SmbClient {
       }
     }
   }
-
 
   Future<SmbFile?> _loadDiagnosticFile(
     NetworkSourceConfig config,
@@ -703,10 +777,10 @@ class SmbClient {
   String _messageForUnexpectedError(
     Object error,
     NetworkSourceConfig config, {
-      required String stage,
-      String? normalizedPath,
-      SmbFile? file,
-    }) {
+    required String stage,
+    String? normalizedPath,
+    SmbFile? file,
+  }) {
     return [
       'SMB 请求发生异常',
       '阶段：$stage',
