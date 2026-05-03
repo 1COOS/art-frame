@@ -283,27 +283,22 @@ class _PlaybackFrame extends ConsumerStatefulWidget {
 
 class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
   _ResolvedPlaybackImage? _displayedImage;
+  final Map<String, _ResolvedPlaybackImage> _smbPrefetchedImages = {};
   ImageStream? _pendingImageStream;
   ImageStreamListener? _pendingImageListener;
   int _loadGeneration = 0;
   bool _didLoadInitialImage = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _prefetchNextImage();
-    });
-  }
+  bool _didResolveDependencies = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_didLoadInitialImage) {
-      return;
+    _didResolveDependencies = true;
+    if (!_didLoadInitialImage) {
+      _didLoadInitialImage = true;
+      _loadCurrentImage();
     }
-    _didLoadInitialImage = true;
-    _loadCurrentImage();
+    _schedulePrefetchNextImage();
   }
 
   @override
@@ -313,15 +308,25 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
         oldWidget.networkConfig?.stableId != widget.networkConfig?.stableId) {
       _loadCurrentImage();
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _prefetchNextImage();
-    });
+    _schedulePrefetchNextImage();
   }
 
   @override
   void dispose() {
     _disposePendingImageStream();
     super.dispose();
+  }
+
+  void _schedulePrefetchNextImage() {
+    if (!_didResolveDependencies) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_didResolveDependencies) {
+        return;
+      }
+      _prefetchNextImage();
+    });
   }
 
   void _disposePendingImageStream() {
@@ -334,10 +339,47 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
     _pendingImageListener = null;
   }
 
+  String _smbResolvedCacheKey(NetworkSourceConfig config, String remotePath) {
+    return 'smb:${SmbImageRequest(config: config, remotePath: remotePath).cacheKey}';
+  }
+
+  void _rememberSmbImage(_ResolvedPlaybackImage image) {
+    if (!image.cacheKey.startsWith('smb:')) {
+      return;
+    }
+    _smbPrefetchedImages[image.cacheKey] = image;
+  }
+
+  void _pruneSmbPrefetchedImages({String? displayedKey}) {
+    final nextItem = widget.nextItem;
+    final nextKey =
+        nextItem == null ||
+            nextItem.kind != MediaItemKind.remote ||
+            widget.networkConfig?.protocol != NetworkSourceProtocol.smb
+        ? null
+        : _smbResolvedCacheKey(widget.networkConfig!, nextItem.path);
+    final resolvedDisplayedKey = displayedKey ?? _displayedImage?.cacheKey;
+    _smbPrefetchedImages.removeWhere(
+      (key, value) => key != resolvedDisplayedKey && key != nextKey,
+    );
+  }
+
+  _ResolvedPlaybackImage _buildResolvedSmbImage(
+    SmbImageRequest request,
+    Uint8List bytes,
+  ) {
+    return _ResolvedPlaybackImage(
+      cacheKey: 'smb:${request.cacheKey}',
+      child: _buildMemoryImage(bytes),
+    );
+  }
+
   void _setDisplayedImage(_ResolvedPlaybackImage image) {
     if (_displayedImage?.cacheKey == image.cacheKey) {
       return;
     }
+    _rememberSmbImage(image);
+    _pruneSmbPrefetchedImages(displayedKey: image.cacheKey);
     if (!mounted) {
       _displayedImage = image;
       return;
@@ -372,12 +414,10 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
             if (!mounted || generation != _loadGeneration) {
               return;
             }
-            _setDisplayedImage(
-              _ResolvedPlaybackImage(
-                cacheKey: 'smb:${request.cacheKey}',
-                child: _buildMemoryImage(bytes),
-              ),
-            );
+            final image = _buildResolvedSmbImage(request, bytes);
+            _rememberSmbImage(image);
+            _pruneSmbPrefetchedImages();
+            _setDisplayedImage(image);
           })
           .catchError((_) {
             if (!mounted || generation != _loadGeneration) {
@@ -465,15 +505,7 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
 
     final config = widget.networkConfig;
     if (config?.protocol == NetworkSourceProtocol.smb) {
-      final request = SmbImageRequest(config: config!, remotePath: item.path);
-      final bytes = ref.read(smbImageMemoryCacheProvider).get(request);
-      if (bytes == null) {
-        return null;
-      }
-      return _ResolvedPlaybackImage(
-        cacheKey: 'smb:${request.cacheKey}',
-        child: _buildMemoryImage(bytes),
-      );
+      return _smbPrefetchedImages[_smbResolvedCacheKey(config!, item.path)];
     }
 
     final memoryBytes = item.tryDecodeBase64Path();
@@ -505,12 +537,12 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
 
     final config = widget.networkConfig;
     if (config?.protocol == NetworkSourceProtocol.smb) {
+      _pruneSmbPrefetchedImages();
       final request = SmbImageRequest(
         config: config!,
         remotePath: nextItem.path,
       );
-      final cache = ref.read(smbImageMemoryCacheProvider);
-      if (cache.get(request) != null) {
+      if (_smbPrefetchedImages.containsKey('smb:${request.cacheKey}')) {
         return;
       }
       try {
@@ -518,7 +550,8 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
         if (!mounted) {
           return;
         }
-        cache.put(request, bytes);
+        _rememberSmbImage(_buildResolvedSmbImage(request, bytes));
+        _pruneSmbPrefetchedImages();
       } catch (_) {}
       return;
     }
@@ -533,7 +566,7 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
       headers: widget.headers.isEmpty ? null : widget.headers,
     );
     try {
-      await precacheImage(provider, context);
+      await precacheImage(provider, context, onError: (error, stackTrace) {});
     } catch (_) {}
   }
 
