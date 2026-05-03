@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'appearance_settings.dart';
+import '../domain/appearance_settings.dart';
 
 part 'appearance_settings_controller.g.dart';
 

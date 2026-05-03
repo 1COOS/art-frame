@@ -15,6 +15,7 @@ class NetworkSourceConfig {
     this.username,
     this.password,
     this.displayName,
+    this.domain,
   });
 
   factory NetworkSourceConfig.fromJson(Map<String, Object?> json) {
@@ -28,6 +29,7 @@ class NetworkSourceConfig {
       port: json['port'] as int?,
       username: json['username'] as String?,
       displayName: json['displayName'] as String?,
+      domain: json['domain'] as String?,
     );
   }
 
@@ -39,11 +41,12 @@ class NetworkSourceConfig {
   final String? username;
   final String? password;
   final String? displayName;
+  final String? domain;
 
   String get stableId {
     final buffer = StringBuffer(protocol.name)
       ..write(':')
-      ..write(secure ? 'https' : 'http')
+      ..write(_stableScheme)
       ..write(':')
       ..write(host)
       ..write(':')
@@ -51,14 +54,22 @@ class NetworkSourceConfig {
       ..write(':')
       ..write(remotePath)
       ..write(':')
-      ..write(username ?? '');
+      ..write(username ?? '')
+      ..write(':')
+      ..write(domain ?? '');
     return buffer.toString();
   }
 
+  String get _stableScheme {
+    return switch (protocol) {
+      NetworkSourceProtocol.webdav => secure ? 'https' : 'http',
+      NetworkSourceProtocol.smb => 'smb',
+      NetworkSourceProtocol.sftp => 'sftp',
+    };
+  }
+
   Uri get directoryUri {
-    final normalizedPath = remotePath.startsWith('/')
-        ? remotePath
-        : '/$remotePath';
+    final normalizedPath = _normalizedRemotePath;
     return Uri(
       scheme: secure ? 'https' : 'http',
       host: host,
@@ -67,14 +78,30 @@ class NetworkSourceConfig {
     );
   }
 
+  String get smbPath {
+    if (protocol != NetworkSourceProtocol.smb) {
+      return _normalizedRemotePath;
+    }
+    final normalizedPath = _normalizedRemotePath;
+    return normalizedPath == '/' ? '/' : normalizedPath;
+  }
+
   String get endpointLabel {
-    final scheme = secure ? 'https' : 'http';
+    final normalizedPath = _normalizedRemotePath;
     final suffix = port == null ? '' : ':$port';
-    final normalizedPath = remotePath.startsWith('/') ? remotePath : '/$remotePath';
-    return '$scheme://$host$suffix$normalizedPath';
+    return switch (protocol) {
+      NetworkSourceProtocol.webdav =>
+        '${secure ? 'https' : 'http'}://$host$suffix$normalizedPath',
+      NetworkSourceProtocol.smb => 'smb://$host$suffix$normalizedPath',
+      NetworkSourceProtocol.sftp => 'sftp://$host$suffix$normalizedPath',
+    };
   }
 
   Map<String, String> get authorizationHeaders {
+    if (protocol != NetworkSourceProtocol.webdav) {
+      return const <String, String>{};
+    }
+
     final username = this.username;
     final password = this.password;
     if (username == null || username.isEmpty || password == null) {
@@ -94,6 +121,7 @@ class NetworkSourceConfig {
     String? username,
     String? password,
     String? displayName,
+    String? domain,
   }) {
     return NetworkSourceConfig(
       protocol: protocol ?? this.protocol,
@@ -104,6 +132,7 @@ class NetworkSourceConfig {
       username: username ?? this.username,
       password: password ?? this.password,
       displayName: displayName ?? this.displayName,
+      domain: domain ?? this.domain,
     );
   }
 
@@ -116,6 +145,17 @@ class NetworkSourceConfig {
       'port': port,
       'username': username,
       'displayName': displayName,
+      'domain': domain,
     };
+  }
+
+  String get _normalizedRemotePath {
+    if (remotePath.trim().isEmpty) {
+      return '/';
+    }
+    final normalized = remotePath.startsWith('/') ? remotePath : '/$remotePath';
+    return normalized.endsWith('/') && normalized.length > 1
+        ? normalized.substring(0, normalized.length - 1)
+        : normalized;
   }
 }

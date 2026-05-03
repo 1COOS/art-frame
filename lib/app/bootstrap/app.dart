@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers/locale_controller.dart';
-import '../../features/settings/application/appearance_settings.dart';
+import '../../features/settings/domain/appearance_settings.dart';
 import '../../features/settings/application/appearance_settings_controller.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../router/app_router.dart';

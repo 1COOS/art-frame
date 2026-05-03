@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../core/providers/locale_controller.dart';
-import '../application/appearance_settings.dart';
+import '../domain/appearance_settings.dart';
 import '../application/appearance_settings_controller.dart';
-import '../application/playback_settings.dart';
+import '../domain/playback_settings.dart';
 import '../application/playback_settings_controller.dart';
 import '../application/settings_about.dart';
 

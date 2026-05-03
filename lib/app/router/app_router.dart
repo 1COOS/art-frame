@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/widgets/adaptive_shell.dart';
+import '../shell/adaptive_shell.dart';
 import '../../features/playback/presentation/playback_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../features/sources/presentation/sources_page.dart';

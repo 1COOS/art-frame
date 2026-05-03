@@ -12,6 +12,7 @@
 .swiftpm/
 migrate_working_dir/
 .playwright-mcp/
+.claude/worktrees/
 
 # Temporary artifacts
 /temp/

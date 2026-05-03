@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:art_frame/features/sources/application/webdav_client.dart';
+import 'package:art_frame/features/sources/application/network/webdav_client.dart';
 import 'package:art_frame/features/sources/domain/media_item.dart';
 import 'package:art_frame/features/sources/domain/network_source_config.dart';
 

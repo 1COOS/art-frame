@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'playback_settings.dart';
+import '../domain/playback_settings.dart';
 
 part 'playback_settings_controller.g.dart';
 

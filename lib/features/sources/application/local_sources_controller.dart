@@ -4,10 +4,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../domain/media_item.dart';
 import '../domain/media_source.dart';
 import 'bundled_sources_provider.dart';
-import 'local_directory_scanner.dart';
-import 'local_security_scope_access.dart';
+import 'local/local_directory_scanner.dart';
+import 'local/local_security_scope_access.dart';
 import 'local_sources_repository.dart';
-import 'network_source_result.dart';
+import '../domain/network_source_result.dart';
 import 'network_source_secrets_store.dart';
 
 part 'local_sources_controller.g.dart';

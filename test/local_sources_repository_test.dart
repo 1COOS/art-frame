@@ -149,4 +149,46 @@ void main() {
     expect(restored.first.networkConfig?.remotePath, '/gallery');
     expect(restored.first.items.single.kind, MediaItemKind.remote);
   });
+
+  test('本地图源仓储可保存并恢复 SMB network 图源', () async {
+    SharedPreferences.setMockInitialValues({});
+    const repository = LocalSourcesRepository();
+
+    const source = MediaSource(
+      id: 'network-smb:smb:demo.local:445:/public/gallery:demo:WORKGROUP',
+      title: 'SMB source',
+      description: 'smb://demo.local:445/public/gallery',
+      badge: 'Network source',
+      kind: MediaSourceKind.network,
+      networkConfig: NetworkSourceConfig(
+        protocol: NetworkSourceProtocol.smb,
+        host: 'demo.local',
+        remotePath: '/public/gallery',
+        port: 445,
+        username: 'demo',
+        domain: 'WORKGROUP',
+        displayName: 'SMB Demo',
+      ),
+      items: [
+        MediaItem(
+          id: 'network-demo-item-smb-1',
+          title: 'cover.jpg',
+          path: '/public/gallery/cover.jpg',
+          description: '/public/gallery/cover.jpg',
+          kind: MediaItemKind.remote,
+        ),
+      ],
+    );
+
+    await repository.save(const [source]);
+    final restored = await repository.load();
+
+    expect(restored, hasLength(1));
+    expect(restored.first.kind, MediaSourceKind.network);
+    expect(restored.first.networkConfig?.protocol, NetworkSourceProtocol.smb);
+    expect(restored.first.networkConfig?.host, 'demo.local');
+    expect(restored.first.networkConfig?.remotePath, '/public/gallery');
+    expect(restored.first.networkConfig?.domain, 'WORKGROUP');
+    expect(restored.first.items.single.path, '/public/gallery/cover.jpg');
+  });
 }

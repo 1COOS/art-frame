@@ -220,4 +220,67 @@ void main() {
     expect(restored.first.networkConfig?.password, isNull);
     expect(restored.last.networkConfig?.password, 'secret-2');
   });
+
+  test('network secrets store 可保存并恢复 SMB 图源密码', () async {
+    SharedPreferences.setMockInitialValues({});
+    const store = NetworkSourceSecretsStore();
+
+    const source = MediaSource(
+      id: 'network-smb:smb:demo.local:445:/public/gallery:demo:WORKGROUP',
+      title: 'SMB Demo',
+      description: 'smb://demo.local:445/public/gallery',
+      badge: 'Network source',
+      kind: MediaSourceKind.network,
+      networkConfig: NetworkSourceConfig(
+        protocol: NetworkSourceProtocol.smb,
+        host: 'demo.local',
+        remotePath: '/public/gallery',
+        port: 445,
+        username: 'demo',
+        password: 'secret',
+        domain: 'WORKGROUP',
+        displayName: 'SMB Demo',
+      ),
+      items: [
+        MediaItem(
+          id: 'network-demo-item-smb-1',
+          title: 'cover.jpg',
+          path: '/public/gallery/cover.jpg',
+          description: '/public/gallery/cover.jpg',
+          kind: MediaItemKind.remote,
+        ),
+      ],
+    );
+
+    await store.save(source);
+    final restored = await store.attachSecrets(const [
+      MediaSource(
+        id: 'network-smb:smb:demo.local:445:/public/gallery:demo:WORKGROUP',
+        title: 'SMB Demo',
+        description: 'smb://demo.local:445/public/gallery',
+        badge: 'Network source',
+        kind: MediaSourceKind.network,
+        networkConfig: NetworkSourceConfig(
+          protocol: NetworkSourceProtocol.smb,
+          host: 'demo.local',
+          remotePath: '/public/gallery',
+          port: 445,
+          username: 'demo',
+          domain: 'WORKGROUP',
+          displayName: 'SMB Demo',
+        ),
+        items: [
+          MediaItem(
+            id: 'network-demo-item-smb-1',
+            title: 'cover.jpg',
+            path: '/public/gallery/cover.jpg',
+            description: '/public/gallery/cover.jpg',
+            kind: MediaItemKind.remote,
+          ),
+        ],
+      ),
+    ]);
+
+    expect(restored.single.networkConfig?.password, 'secret');
+  });
 }

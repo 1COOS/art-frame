@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Art Frame 需要访问你的相册以导入媒体库图片。</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Art Frame 需要访问局域网 SMB 共享以导入网络图源。</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

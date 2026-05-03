@@ -8,11 +8,13 @@ import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../app/router/app_destination.dart';
 import '../../../core/widgets/local_image.dart';
 import '../../../core/widgets/media_asset_image.dart';
-import '../../settings/application/playback_settings.dart';
+import '../../settings/domain/playback_settings.dart';
 import '../../settings/application/playback_settings_controller.dart';
 import '../../sources/application/selected_source_controller.dart';
+import '../../sources/application/network/smb_image_provider.dart';
 import '../../sources/domain/media_item.dart';
 import '../../sources/domain/media_source.dart';
+import '../../sources/domain/network_source_config.dart';
 
 class PlaybackPage extends ConsumerStatefulWidget {
   const PlaybackPage({super.key});
@@ -27,6 +29,28 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
   String? _timerKey;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.listenManual(selectedSourceProvider, (_, _) {
+        _reconfigureTimer();
+      });
+      ref.listenManual(playbackSettingsControllerProvider, (_, _) {
+        _reconfigureTimer();
+      });
+      _reconfigureTimer();
+    });
+  }
+
+  void _reconfigureTimer() {
+    final source = ref.read(selectedSourceProvider);
+    final settings =
+        ref.read(playbackSettingsControllerProvider).asData?.value ??
+        const PlaybackSettings.defaults();
+    _configureTimer(source: source, settings: settings);
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
@@ -36,11 +60,6 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final source = ref.watch(selectedSourceProvider);
-    final settings =
-        ref.watch(playbackSettingsControllerProvider).asData?.value ??
-        const PlaybackSettings.defaults();
-
-    _configureTimer(source: source, settings: settings);
 
     if (source == null || source.items.isEmpty) {
       _timer?.cancel();
@@ -94,6 +113,7 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
               headers:
                   source.networkConfig?.authorizationHeaders ??
                   const <String, String>{},
+              networkConfig: source.networkConfig,
             ),
             Positioned(
               top: 16,
@@ -226,14 +246,19 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
   }
 }
 
-class _PlaybackFrame extends StatelessWidget {
-  const _PlaybackFrame({required this.item, required this.headers});
+class _PlaybackFrame extends ConsumerWidget {
+  const _PlaybackFrame({
+    required this.item,
+    required this.headers,
+    required this.networkConfig,
+  });
 
   final MediaItem item;
   final Map<String, String> headers;
+  final NetworkSourceConfig? networkConfig;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (item.kind == MediaItemKind.file) {
       return buildLocalImage(item.path);
     }
@@ -243,17 +268,46 @@ class _PlaybackFrame extends StatelessWidget {
     }
 
     if (item.kind == MediaItemKind.remote) {
+      final memoryBytes = item.tryDecodeBase64Path();
+      if (memoryBytes != null) {
+        return Image.memory(
+          memoryBytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const _RemoteErrorPlaceholder();
+          },
+        );
+      }
+
+      final config = networkConfig;
+      if (config?.protocol == NetworkSourceProtocol.smb) {
+        final smbBytes = ref.watch(
+          smbImageBytesProvider(
+            SmbImageRequest(config: config!, remotePath: item.path),
+          ),
+        );
+        return smbBytes.when(
+          data: (bytes) => Image.memory(
+            bytes,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return const _RemoteErrorPlaceholder();
+            },
+          ),
+          error: (error, stackTrace) => const _RemoteErrorPlaceholder(),
+          loading: () => ColoredBox(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+        );
+      }
+
       return Image.network(
         item.path,
         headers: headers.isEmpty ? null : headers,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
-          return ColoredBox(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Center(
-              child: Icon(Icons.cloud_off_outlined, size: 64),
-            ),
-          );
+          return const _RemoteErrorPlaceholder();
         },
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) {
@@ -268,6 +322,21 @@ class _PlaybackFrame extends StatelessWidget {
     }
 
     return Image.asset(item.assetPath, fit: BoxFit.cover);
+  }
+
+}
+
+class _RemoteErrorPlaceholder extends StatelessWidget {
+  const _RemoteErrorPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: const Center(
+        child: Icon(Icons.cloud_off_outlined, size: 64),
+      ),
+    );
   }
 }
 

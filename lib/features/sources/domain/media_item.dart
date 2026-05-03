@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 enum MediaItemKind { asset, file, mediaAsset, remote }
@@ -56,5 +58,13 @@ class MediaItem {
       'description': description,
       'kind': kind.name,
     };
+  }
+
+  Uint8List? tryDecodeBase64Path() {
+    try {
+      return base64Decode(path);
+    } catch (_) {
+      return null;
+    }
   }
 }

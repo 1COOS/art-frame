@@ -14,4 +14,21 @@ void main() {
 
     expect(config.endpointLabel, 'http://192.168.2.100:5005/photo/test');
   });
+
+  test('SMB endpointLabel and stableId include protocol domain context', () {
+    const config = NetworkSourceConfig(
+      protocol: NetworkSourceProtocol.smb,
+      host: 'demo.local',
+      remotePath: '/public/gallery',
+      port: 445,
+      username: 'demo',
+      domain: 'WORKGROUP',
+    );
+
+    expect(config.endpointLabel, 'smb://demo.local:445/public/gallery');
+    expect(
+      config.stableId,
+      'smb:smb:demo.local:445:/public/gallery:demo:WORKGROUP',
+    );
+  });
 }

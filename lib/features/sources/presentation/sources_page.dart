@@ -7,17 +7,16 @@ import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../app/router/app_destination.dart';
 import '../../../core/widgets/local_image.dart';
 import '../../../core/widgets/media_asset_image.dart';
-import '../../settings/application/playback_settings.dart';
+import '../../settings/domain/playback_settings.dart';
 import '../../settings/application/playback_settings_controller.dart';
-import '../application/local_file_picker.dart';
 import '../application/local_sources_controller.dart';
-import '../application/media_library_picker.dart';
-import '../application/media_library_picker_result.dart';
-import '../application/network_source_result.dart';
-import '../application/network_source_service.dart';
+import '../application/local/media_library_picker.dart';
+import '../application/network/network_source_service.dart';
 import '../application/selected_source_controller.dart';
+import '../application/source_import_actions.dart';
 import '../domain/media_item.dart';
 import '../domain/media_source.dart';
+import '../domain/network_source_config.dart';
 
 class SourcesPage extends ConsumerWidget {
   const SourcesPage({super.key});
@@ -40,159 +39,7 @@ class SourcesPage extends ConsumerWidget {
     final canImportNetworkSource = ref
         .read(networkSourceServiceProvider)
         .isSupported;
-
-    Future<void> pickLocalFiles() async {
-      final items = await ref.read(localFilePickerProvider).pickImages();
-      final source = await ref
-          .read(localSourcesControllerProvider.notifier)
-          .importItems(
-            items,
-            title: l10n.localFilesSourceTitle,
-            description: l10n.localFilesSourceDescription,
-            badge: l10n.localFilesSourceBadge,
-          );
-
-      if (source == null || !context.mounted) {
-        return;
-      }
-
-      await ref
-          .read(selectedSourceControllerProvider.notifier)
-          .select(source.id);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.localFilesImported(items.length))),
-        );
-        context.go(AppDestination.playback.path);
-      }
-    }
-
-    Future<void> pickLocalDirectory() async {
-      final directoryPath = await ref
-          .read(localFilePickerProvider)
-          .pickDirectoryPath();
-      if (directoryPath == null || directoryPath.isEmpty) {
-        return;
-      }
-
-      final source = await ref
-          .read(localSourcesControllerProvider.notifier)
-          .importDirectory(
-            directoryPath,
-            badge: l10n.localDirectorySourceBadge,
-          );
-      if (source == null || !context.mounted) {
-        return;
-      }
-
-      await ref
-          .read(selectedSourceControllerProvider.notifier)
-          .select(source.id);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.localDirectoryImported(source.items.length)),
-          ),
-        );
-        context.go(AppDestination.playback.path);
-      }
-    }
-
-    Future<void> pickMediaLibrary() async {
-      final result = await ref
-          .read(mediaLibraryPickerProvider)
-          .pickImages(context);
-      if (!context.mounted) {
-        return;
-      }
-
-      switch (result.status) {
-        case MediaLibraryPickStatus.success:
-          final source = await ref
-              .read(localSourcesControllerProvider.notifier)
-              .importMediaLibraryItems(
-                result.items,
-                title: l10n.mediaLibrarySourceTitle,
-                description: l10n.mediaLibrarySourceDescription,
-                badge: l10n.mediaLibrarySourceBadge,
-              );
-          if (source == null || !context.mounted) {
-            return;
-          }
-
-          await ref
-              .read(selectedSourceControllerProvider.notifier)
-              .select(source.id);
-
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.mediaLibraryImported(result.items.length)),
-              ),
-            );
-            context.go(AppDestination.playback.path);
-          }
-        case MediaLibraryPickStatus.permissionDenied:
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.mediaLibraryPermissionDenied)),
-          );
-        case MediaLibraryPickStatus.unsupported:
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.mediaLibraryUnavailable)));
-        case MediaLibraryPickStatus.cancelled || MediaLibraryPickStatus.empty:
-          return;
-      }
-    }
-
-    Future<void> pickNetworkSource() async {
-      final result = await ref
-          .read(networkSourceServiceProvider)
-          .createSource(
-            context,
-            title: l10n.networkSourceTitle,
-            description: l10n.networkSourceDescription,
-            badge: l10n.networkSourceBadge,
-          );
-      if (!context.mounted) {
-        return;
-      }
-
-      switch (result) {
-        case NetworkSourceValidationSuccess(:final draft):
-          final source = await ref
-              .read(localSourcesControllerProvider.notifier)
-              .importNetworkSource(draft);
-          if (source == null || !context.mounted) {
-            return;
-          }
-
-          await ref
-              .read(selectedSourceControllerProvider.notifier)
-              .select(source.id);
-
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.networkSourceImported(source.items.length)),
-              ),
-            );
-            context.go(AppDestination.playback.path);
-          }
-        case NetworkSourceValidationFailure(:final message):
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message)));
-        case NetworkSourceValidationUnsupported():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.networkSourceUnavailable)),
-          );
-        case NetworkSourceValidationCancelled():
-          return;
-      }
-    }
+    final actions = SourceImportActions(ref, context, l10n);
 
     return Align(
       alignment: Alignment.topCenter,
@@ -250,25 +97,25 @@ class SourcesPage extends ConsumerWidget {
                       alignment: WrapAlignment.end,
                       children: [
                         FilledButton.icon(
-                          onPressed: pickLocalFiles,
+                          onPressed: actions.pickLocalFiles,
                           icon: const Icon(Icons.add_photo_alternate_outlined),
                           label: Text(l10n.addLocalFilesSource),
                         ),
                         if (canImportDirectory)
                           OutlinedButton.icon(
-                            onPressed: pickLocalDirectory,
+                            onPressed: actions.pickLocalDirectory,
                             icon: const Icon(Icons.folder_open_outlined),
                             label: Text(l10n.addLocalDirectorySource),
                           ),
                         if (canImportMediaLibrary)
                           OutlinedButton.icon(
-                            onPressed: pickMediaLibrary,
+                            onPressed: actions.pickMediaLibrary,
                             icon: const Icon(Icons.photo_library_outlined),
                             label: Text(l10n.addMediaLibrarySource),
                           ),
                         if (canImportNetworkSource)
                           OutlinedButton.icon(
-                            onPressed: pickNetworkSource,
+                            onPressed: actions.pickNetworkSource,
                             icon: const Icon(Icons.cloud_outlined),
                             label: Text(l10n.addNetworkSource),
                           ),
@@ -301,69 +148,10 @@ class SourcesPage extends ConsumerWidget {
                   },
                   onEdit: source.kind != MediaSourceKind.network
                       ? null
-                      : () async {
-                          final draft = NetworkSourceDraft(
-                            title: source.title,
-                            description: source.description,
-                            badge: source.badge,
-                            config: source.networkConfig!,
-                            items: source.items,
-                          );
-                          final result = await ref
-                              .read(networkSourceServiceProvider)
-                              .createSource(
-                                context,
-                                title: l10n.networkSourceTitle,
-                                description: l10n.networkSourceDescription,
-                                badge: l10n.networkSourceBadge,
-                                initialDraft: draft,
-                              );
-                          if (!context.mounted) {
-                            return;
-                          }
-
-                          switch (result) {
-                            case NetworkSourceValidationSuccess(:final draft):
-                              final previousStableId =
-                                  source.networkConfig?.stableId;
-                              final updated = await ref
-                                  .read(localSourcesControllerProvider.notifier)
-                                  .updateNetworkSource(
-                                    source.id,
-                                    draft,
-                                    previousStableId: previousStableId,
-                                  );
-                              if (updated == null || !context.mounted) {
-                                return;
-                              }
-                              await ref
-                                  .read(selectedSourceControllerProvider.notifier)
-                                  .select(updated.id);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      l10n.networkSourceUpdated(
-                                        updated.items.length,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                            case NetworkSourceValidationFailure(:final message):
-                              ScaffoldMessenger.of(
-                                context,
-                              ).showSnackBar(SnackBar(content: Text(message)));
-                            case NetworkSourceValidationUnsupported():
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n.networkSourceUnavailable),
-                                ),
-                              );
-                            case NetworkSourceValidationCancelled():
-                              return;
-                          }
-                        },
+                      : () => actions.editNetworkSource(
+                            source,
+                            selectedId: selectedId,
+                          ),
                   onRemove: source.kind == MediaSourceKind.bundled
                       ? null
                       : () async {
@@ -528,13 +316,13 @@ class _SourceCard extends StatelessWidget {
   }
 }
 
-class _SourcePreview extends StatelessWidget {
+class _SourcePreview extends ConsumerWidget {
   const _SourcePreview({required this.source});
 
   final MediaSource source;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final item = source.items.first;
 
     if (item.kind == MediaItemKind.file) {
@@ -548,6 +336,37 @@ class _SourcePreview extends StatelessWidget {
     if (item.kind == MediaItemKind.remote) {
       final colorScheme = Theme.of(context).colorScheme;
       final textTheme = Theme.of(context).textTheme;
+      final bytes = item.tryDecodeBase64Path();
+      if (bytes != null) {
+        return Image.memory(
+          bytes,
+          width: 132,
+          height: 92,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildRemoteError(colorScheme, textTheme);
+          },
+        );
+      }
+
+      final config = source.networkConfig;
+      if (config?.protocol == NetworkSourceProtocol.smb) {
+        return ColoredBox(
+          color: colorScheme.surfaceContainerHighest,
+          child: SizedBox(
+            width: 132,
+            height: 92,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.storage_outlined),
+                const SizedBox(height: 8),
+                Text('SMB', style: textTheme.labelMedium),
+              ],
+            ),
+          ),
+        );
+      }
 
       return Image.network(
         item.path,
@@ -581,21 +400,7 @@ class _SourcePreview extends StatelessWidget {
           );
         },
         errorBuilder: (context, error, stackTrace) {
-          return ColoredBox(
-            color: colorScheme.surfaceContainerHighest,
-            child: SizedBox(
-              width: 132,
-              height: 92,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.cloud_off_outlined, size: 28),
-                  const SizedBox(height: 6),
-                  Text('缩略图加载失败', style: textTheme.bodySmall),
-                ],
-              ),
-            ),
-          );
+          return _buildRemoteError(colorScheme, textTheme);
         },
         loadingBuilder: (context, child, loadingProgress) => child,
       );
@@ -606,6 +411,24 @@ class _SourcePreview extends StatelessWidget {
       width: 132,
       height: 92,
       fit: BoxFit.cover,
+    );
+  }
+
+  Widget _buildRemoteError(ColorScheme colorScheme, TextTheme textTheme) {
+    return ColoredBox(
+      color: colorScheme.surfaceContainerHighest,
+      child: SizedBox(
+        width: 132,
+        height: 92,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.cloud_off_outlined, size: 28),
+            const SizedBox(height: 6),
+            Text('缩略图加载失败', style: textTheme.bodySmall),
+          ],
+        ),
+      ),
     );
   }
 }
