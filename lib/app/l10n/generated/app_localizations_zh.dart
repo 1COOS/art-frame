@@ -21,6 +21,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourcesTab => '图源';
 
   @override
+  String get libraryTab => '媒体库';
+
+  @override
+  String get connectTab => '连接';
+
+  @override
   String get playbackTab => '播放';
 
   @override
@@ -43,6 +49,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sourcesTitle => '图源';
+
+  @override
+  String get libraryTitle => '媒体库';
+
+  @override
+  String get connectTitle => '连接';
+
+  @override
+  String get connectBody => '从本地文件、本地目录、媒体库或网络添加新的图源。';
 
   @override
   String get sourcesBody => '统一管理内置、本地文件、本地目录、媒体库与网络图源，并将其用于播放。';
@@ -171,10 +186,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playbackEmptyTitle => '先选择一个图源';
 
   @override
-  String get playbackEmptyBody => '前往图源页选择一个内置本地集合，然后回到这里预览轮播效果。';
+  String get playbackEmptyBody => '前往媒体库选择一个内置本地集合，然后回到这里预览轮播效果。';
 
   @override
   String get goToSources => '前往图源页';
+
+  @override
+  String get goToLibrary => '前往媒体库';
 
   @override
   String get nextFrame => '下一张';

@@ -1,17 +1,16 @@
-import 'package:flutter/foundation.dart';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/adaptive/adaptive_layout.dart';
+import '../../../app/adaptive/app_breakpoints.dart';
 import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../app/router/app_destination.dart';
 import '../../../core/widgets/local_image.dart';
 import '../../../core/widgets/media_asset_image.dart';
-import '../../settings/domain/playback_settings.dart';
-import '../../settings/application/playback_settings_controller.dart';
 import '../application/local_sources_controller.dart';
-import '../application/local/media_library_picker.dart';
-import '../application/network/network_source_service.dart';
 import '../application/selected_source_controller.dart';
 import '../application/source_import_actions.dart';
 import '../domain/media_item.dart';
@@ -30,314 +29,110 @@ class SourcesPage extends ConsumerWidget {
         .watch(selectedSourceControllerProvider)
         .asData
         ?.value;
-    final settings =
-        ref.watch(playbackSettingsControllerProvider).asData?.value ??
-        const PlaybackSettings.defaults();
-    final canImportDirectory = _supportsDirectoryImport();
-    final canImportMediaLibrary = ref
-        .read(mediaLibraryPickerProvider)
-        .isSupported;
-    final canImportNetworkSource = ref
-        .read(networkSourceServiceProvider)
-        .isSupported;
     final actions = SourceImportActions(ref, context, l10n);
 
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 980),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Wrap(
-                  spacing: 24,
-                  runSpacing: 24,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  alignment: WrapAlignment.spaceBetween,
-                  children: [
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 520),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.secondaryContainer,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Icon(
-                              Icons.photo_library_outlined,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSecondaryContainer,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            l10n.sourcesTitle,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            l10n.sourcesBody,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      alignment: WrapAlignment.end,
-                      children: [
-                        FilledButton.icon(
-                          onPressed: actions.pickLocalFiles,
-                          icon: const Icon(Icons.add_photo_alternate_outlined),
-                          label: Text(l10n.addLocalFilesSource),
-                        ),
-                        if (canImportDirectory)
-                          OutlinedButton.icon(
-                            onPressed: actions.pickLocalDirectory,
-                            icon: const Icon(Icons.folder_open_outlined),
-                            label: Text(l10n.addLocalDirectorySource),
-                          ),
-                        if (canImportMediaLibrary)
-                          OutlinedButton.icon(
-                            onPressed: actions.pickMediaLibrary,
-                            icon: const Icon(Icons.photo_library_outlined),
-                            label: Text(l10n.addMediaLibrarySource),
-                          ),
-                        if (canImportNetworkSource)
-                          OutlinedButton.icon(
-                            onPressed: actions.pickNetworkSource,
-                            icon: const Icon(Icons.cloud_outlined),
-                            label: Text(l10n.addNetworkSource),
-                          ),
-                      ],
-                    ),
-                  ],
+    return Scaffold(
+      body: AdaptiveLayout(
+        builder: (context, type) {
+          final crossAxisCount = switch (type) {
+            AdaptiveWindowType.phone => 2,
+            AdaptiveWindowType.tablet => 3,
+            AdaptiveWindowType.wide => 4,
+          };
+
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                sliver: SliverToBoxAdapter(
+                  child: Text(
+                    l10n.libraryTitle,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            for (final source in sources)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _SourceCard(
-                  source: source,
-                  isSelected: source.id == selectedId,
-                  intervalSeconds: settings.intervalSeconds,
-                  onSelect: () {
-                    ref
-                        .read(selectedSourceControllerProvider.notifier)
-                        .select(source.id);
-                  },
-                  onOpenPlayback: () {
-                    ref
-                        .read(selectedSourceControllerProvider.notifier)
-                        .select(source.id);
-                    if (context.mounted) {
-                      context.go(AppDestination.playback.path);
-                    }
-                  },
-                  onEdit: source.kind != MediaSourceKind.network
-                      ? null
-                      : () => actions.editNetworkSource(
-                            source,
-                            selectedId: selectedId,
-                          ),
-                  onRemove: source.kind == MediaSourceKind.bundled
-                      ? null
-                      : () async {
-                          final removingSelected = source.id == selectedId;
-                          await ref
-                              .read(localSourcesControllerProvider.notifier)
-                              .remove(source.id);
-                          if (removingSelected) {
-                            await ref
-                                .read(selectedSourceControllerProvider.notifier)
-                                .clear();
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 0.85,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final source = sources[index];
+                      return _SourceGridItem(
+                        source: source,
+                        isSelected: source.id == selectedId,
+                        onTap: () {
+                          ref
+                              .read(selectedSourceControllerProvider.notifier)
+                              .select(source.id);
+                          if (context.mounted) {
+                            context.go(AppDestination.playback.path);
                           }
                         },
+                        onEdit: source.kind != MediaSourceKind.network
+                            ? null
+                            : () => actions.editNetworkSource(
+                                  source,
+                                  selectedId: selectedId,
+                                ),
+                        onRemove: source.kind == MediaSourceKind.bundled
+                            ? null
+                            : () async {
+                                final removingSelected =
+                                    source.id == selectedId;
+                                await ref
+                                    .read(
+                                        localSourcesControllerProvider.notifier)
+                                    .remove(source.id);
+                                if (removingSelected) {
+                                  await ref
+                                      .read(selectedSourceControllerProvider
+                                          .notifier)
+                                      .clear();
+                                }
+                              },
+                      );
+                    },
+                    childCount: sources.length,
+                  ),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  bool _supportsDirectoryImport() {
-    if (kIsWeb) {
-      return false;
-    }
-
-    return switch (defaultTargetPlatform) {
-      TargetPlatform.android ||
-      TargetPlatform.linux ||
-      TargetPlatform.macOS ||
-      TargetPlatform.windows => true,
-      TargetPlatform.iOS || TargetPlatform.fuchsia => false,
-    };
-  }
-}
-
-class _SourceCard extends StatelessWidget {
-  const _SourceCard({
-    required this.source,
-    required this.isSelected,
-    required this.intervalSeconds,
-    required this.onSelect,
-    required this.onOpenPlayback,
-    this.onEdit,
-    this.onRemove,
-  });
-
-  final MediaSource source;
-  final bool isSelected;
-  final int intervalSeconds;
-  final VoidCallback onSelect;
-  final VoidCallback onOpenPlayback;
-  final VoidCallback? onEdit;
-  final VoidCallback? onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: _SourcePreview(source: source),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(source.title, style: theme.textTheme.titleLarge),
-                          Chip(
-                            label: Text(
-                              source.kind == MediaSourceKind.bundled
-                                  ? l10n.builtInSourceBadge
-                                  : source.badge,
-                            ),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          if (isSelected)
-                            Chip(
-                              avatar: Icon(
-                                Icons.check_circle_outlined,
-                                size: 18,
-                                color: colorScheme.onSecondaryContainer,
-                              ),
-                              label: Text(l10n.selectedSourceLabel),
-                              visualDensity: VisualDensity.compact,
-                              backgroundColor: colorScheme.secondaryContainer,
-                              labelStyle: theme.textTheme.labelMedium?.copyWith(
-                                color: colorScheme.onSecondaryContainer,
-                              ),
-                              side: BorderSide.none,
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        l10n.sourceSummaryReady(source.items.length),
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        source.description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                FilledButton(
-                  onPressed: onOpenPlayback,
-                  child: Text(l10n.openPlayback),
-                ),
-                OutlinedButton(
-                  onPressed: onSelect,
-                  child: Text(l10n.selectSource),
-                ),
-                if (onEdit != null)
-                  OutlinedButton.icon(
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.edit_outlined),
-                    label: Text(l10n.editSource),
-                  ),
-                if (onRemove != null)
-                  TextButton.icon(
-                    onPressed: onRemove,
-                    icon: const Icon(Icons.delete_outline),
-                    label: Text(l10n.removeSource),
-                  ),
-              ],
-            ),
-          ],
-        ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class _SourcePreview extends ConsumerWidget {
-  const _SourcePreview({required this.source});
+class _SourceCoverImage extends ConsumerWidget {
+  const _SourceCoverImage({required this.source});
 
   final MediaSource source;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final item = source.items.first;
+    final colorScheme = Theme.of(context).colorScheme;
 
     if (item.kind == MediaItemKind.file) {
-      return buildLocalImage(item.path, width: 132, height: 92);
+      return SizedBox.expand(
+        child: buildLocalImage(item.path, fit: BoxFit.cover),
+      );
     }
 
     if (item.kind == MediaItemKind.mediaAsset) {
-      return buildMediaAssetImage(item.path, width: 132, height: 92);
+      return SizedBox.expand(
+        child: buildMediaAssetImage(item.path, fit: BoxFit.cover),
+      );
     }
 
     if (item.kind == MediaItemKind.remote) {
-      final colorScheme = Theme.of(context).colorScheme;
-      final textTheme = Theme.of(context).textTheme;
-
       final config = source.networkConfig;
       if (config?.protocol == NetworkSourceProtocol.smb) {
         final smbBytes = ref.watch(
@@ -346,105 +141,232 @@ class _SourcePreview extends ConsumerWidget {
           ),
         );
         return smbBytes.when(
-          data: (bytes) => Image.memory(
-            bytes,
-            width: 132,
-            height: 92,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return _buildRemoteError(colorScheme, textTheme);
-            },
+          data: (bytes) => SizedBox.expand(
+            child: Image.memory(bytes, fit: BoxFit.cover),
           ),
-          error: (error, stackTrace) => _buildRemoteError(colorScheme, textTheme),
-          loading: () => ColoredBox(
-            color: colorScheme.surfaceContainerHighest,
-            child: const SizedBox(
-              width: 132,
-              height: 92,
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2.2),
-                ),
-              ),
-            ),
+          error: (_, _) => _CoverPlaceholder(colorScheme: colorScheme),
+          loading: () => _CoverPlaceholder(
+            colorScheme: colorScheme,
+            isLoading: true,
           ),
         );
       }
 
       final bytes = item.tryDecodeBase64Path();
       if (bytes != null) {
-        return Image.memory(
-          bytes,
-          width: 132,
-          height: 92,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return _buildRemoteError(colorScheme, textTheme);
-          },
+        return SizedBox.expand(
+          child: Image.memory(bytes, fit: BoxFit.cover),
         );
       }
 
-      return Image.network(
-        item.path,
-        headers: source.networkConfig?.authorizationHeaders,
-        width: 132,
-        height: 92,
-        fit: BoxFit.cover,
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          final isLoaded = wasSynchronouslyLoaded || frame != null;
-          if (isLoaded) {
-            return child;
-          }
-          return ColoredBox(
-            color: colorScheme.surfaceContainerHighest,
-            child: SizedBox(
-              width: 132,
-              height: 92,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2.2),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('正在加载缩略图', style: textTheme.bodySmall),
-                ],
-              ),
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return _buildRemoteError(colorScheme, textTheme);
-        },
-        loadingBuilder: (context, child, loadingProgress) => child,
+      return SizedBox.expand(
+        child: Image.network(
+          item.path,
+          headers: source.networkConfig?.authorizationHeaders,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) =>
+              _CoverPlaceholder(colorScheme: colorScheme),
+        ),
       );
     }
 
-    return Image.asset(
-      item.assetPath,
-      width: 132,
-      height: 92,
-      fit: BoxFit.cover,
+    return SizedBox.expand(
+      child: Image.asset(item.assetPath, fit: BoxFit.cover),
+    );
+  }
+}
+class _SourceGridItem extends ConsumerStatefulWidget {
+  const _SourceGridItem({
+    required this.source,
+    required this.isSelected,
+    required this.onTap,
+    this.onEdit,
+    this.onRemove,
+  });
+
+  final MediaSource source;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onRemove;
+
+  @override
+  ConsumerState<_SourceGridItem> createState() => _SourceGridItemState();
+}
+
+class _SourceGridItemState extends ConsumerState<_SourceGridItem> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onLongPress: (widget.onEdit != null || widget.onRemove != null)
+            ? () => _showActionsMenu(context, l10n)
+            : null,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Cover image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: _SourceCoverImage(source: widget.source),
+            ),
+            // Gradient overlay
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black87],
+                    stops: [0.4, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            // Selected indicator
+            if (widget.isSelected)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check,
+                    size: 14,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+              ),
+            // Info overlay at bottom
+            Positioned(
+              left: 10,
+              right: 10,
+              bottom: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.source.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${widget.source.items.length} ${widget.source.badge}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Hover actions (desktop)
+            if (_hovering && (widget.onEdit != null || widget.onRemove != null))
+              Positioned(
+                top: 8,
+                left: 8,
+                child: _GlassIconButton(
+                  icon: Icons.more_horiz,
+                  onTap: () => _showActionsMenu(context, l10n),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildRemoteError(ColorScheme colorScheme, TextTheme textTheme) {
+  void _showActionsMenu(BuildContext context, AppLocalizations l10n) {
+    final items = <PopupMenuEntry<String>>[
+      if (widget.onEdit != null)
+        PopupMenuItem(value: 'edit', child: Text(l10n.editSource)),
+      if (widget.onRemove != null)
+        PopupMenuItem(value: 'remove', child: Text(l10n.removeSource)),
+    ];
+
+    final renderBox = context.findRenderObject() as RenderBox;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        offset.dx,
+        offset.dy,
+        offset.dx + renderBox.size.width,
+        offset.dy + renderBox.size.height,
+      ),
+      items: items,
+    ).then((value) {
+      if (value == 'edit') widget.onEdit?.call();
+      if (value == 'remove') widget.onRemove?.call();
+    });
+  }
+}
+
+class _CoverPlaceholder extends StatelessWidget {
+  const _CoverPlaceholder({required this.colorScheme, this.isLoading = false});
+
+  final ColorScheme colorScheme;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
     return ColoredBox(
       color: colorScheme.surfaceContainerHighest,
-      child: SizedBox(
-        width: 132,
-        height: 92,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.cloud_off_outlined, size: 28),
-            const SizedBox(height: 6),
-            Text('缩略图加载失败', style: textTheme.bodySmall),
-          ],
+      child: Center(
+        child: isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Icon(
+                Icons.image_outlined,
+                size: 32,
+                color: colorScheme.onSurfaceVariant,
+              ),
+      ),
+    );
+  }
+}
+
+class _GlassIconButton extends StatelessWidget {
+  const _GlassIconButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            color: Colors.black.withValues(alpha: 0.3),
+            child: Icon(icon, size: 18, color: Colors.white),
+          ),
         ),
       ),
     );

@@ -33,41 +33,18 @@ class SettingsPage extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        Icons.settings_suggest_rounded,
-                        color: colorScheme.onSecondaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      l10n.settingsTitle,
-                      style: theme.textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.settingsBody,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
+            Text(
+              l10n.settingsTitle,
+              style: theme.textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.settingsBody,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             _SettingsSection(
               title: l10n.settingsGeneralTitle,
               description: l10n.settingsGeneralBody,

@@ -1,8 +1,5 @@
-# adaptive-multi-device-layout Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change build-flutter-multi-platform-foundation. Update Purpose after archive.
-## Requirements
 ### Requirement: Layout adapts to phone, tablet, and wide web form factors
 系统 SHALL 支持手机、平板和宽屏 Web 体验的自适应布局，使用显式断点，并针对画廊式内容展示优化各尺寸下的空间利用。
 
@@ -32,4 +29,3 @@ TBD - created by archiving change build-flutter-multi-platform-foundation. Updat
 #### Scenario: Navigation rail collapses to icon-only mode
 - **WHEN** 平板或桌面端侧边导航被渲染
 - **THEN** 导航 SHALL 默认以仅图标模式显示（无文字标签），最小化水平空间占用
-

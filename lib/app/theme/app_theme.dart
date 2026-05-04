@@ -7,7 +7,7 @@ class AppTheme {
 
   static ThemeData _buildTheme(Brightness brightness) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF6B4EFF),
+      seedColor: const Color(0xFF8B7FA8),
       brightness: brightness,
     );
     final baseTextTheme = brightness == Brightness.dark
@@ -16,17 +16,18 @@ class AppTheme {
     final textTheme = baseTextTheme.copyWith(
       headlineMedium: baseTextTheme.headlineMedium?.copyWith(
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.4,
+        letterSpacing: -0.5,
       ),
       titleLarge: baseTextTheme.titleLarge?.copyWith(
         fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
       ),
       titleMedium: baseTextTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.w600,
       ),
-      bodyLarge: baseTextTheme.bodyLarge?.copyWith(height: 1.45),
+      bodyLarge: baseTextTheme.bodyLarge?.copyWith(height: 1.5),
       bodyMedium: baseTextTheme.bodyMedium?.copyWith(
-        height: 1.45,
+        height: 1.5,
         color: colorScheme.onSurfaceVariant,
       ),
       labelLarge: baseTextTheme.labelLarge?.copyWith(
@@ -37,7 +38,7 @@ class AppTheme {
 
     OutlineInputBorder buildInputBorder(Color borderColor) {
       return OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: borderColor),
       );
     }
@@ -47,16 +48,20 @@ class AppTheme {
       useMaterial3: true,
       textTheme: textTheme,
       scaffoldBackgroundColor: brightness == Brightness.dark
-          ? const Color(0xFF111018)
-          : const Color(0xFFF6F4FB),
+          ? const Color(0xFF0A0A0C)
+          : const Color(0xFFF8F7F9),
       cardTheme: CardThemeData(
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         elevation: 0,
-        color: colorScheme.surface,
+        color: brightness == Brightness.dark
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)
+            : colorScheme.surfaceContainerLowest,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: BorderSide(color: colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -64,7 +69,7 @@ class AppTheme {
           minimumSize: const Size(0, 48),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: textTheme.labelLarge,
         ),
@@ -74,7 +79,7 @@ class AppTheme {
           minimumSize: const Size(0, 48),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(12),
           ),
           side: BorderSide(color: colorScheme.outlineVariant),
           textStyle: textTheme.labelLarge,
@@ -85,13 +90,13 @@ class AppTheme {
           minimumSize: const Size(0, 44),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: textTheme.labelLarge,
         ),
       ),
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         side: BorderSide(color: colorScheme.outlineVariant),
         selectedColor: colorScheme.secondaryContainer,
         backgroundColor: colorScheme.surfaceContainerLow,
@@ -114,17 +119,18 @@ class AppTheme {
         focusedBorder: buildInputBorder(colorScheme.primary),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 72,
+        height: 56,
         backgroundColor: colorScheme.surface,
         indicatorColor: colorScheme.secondaryContainer,
-        labelTextStyle: WidgetStatePropertyAll(textTheme.labelMedium),
+        labelTextStyle: WidgetStatePropertyAll(
+          textTheme.labelSmall?.copyWith(fontSize: 10),
+        ),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: Colors.transparent,
         useIndicator: true,
         indicatorColor: colorScheme.secondaryContainer,
-        selectedLabelTextStyle: textTheme.labelMedium,
-        unselectedLabelTextStyle: textTheme.labelMedium,
+        minWidth: 56,
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: colorScheme.primary,

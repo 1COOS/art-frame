@@ -22,6 +22,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sourcesTab => 'Sources';
 
   @override
+  String get libraryTab => 'Library';
+
+  @override
+  String get connectTab => 'Connect';
+
+  @override
   String get playbackTab => 'Playback';
 
   @override
@@ -44,6 +50,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sourcesTitle => 'Sources';
+
+  @override
+  String get libraryTitle => 'Library';
+
+  @override
+  String get connectTitle => 'Connect';
+
+  @override
+  String get connectBody =>
+      'Add new sources from local files, directories, media library, or network.';
 
   @override
   String get sourcesBody =>
@@ -180,10 +196,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playbackEmptyBody =>
-      'Open the sources tab, choose a bundled local collection, then return here to preview the loop.';
+      'Open the library tab, choose a bundled local collection, then return here to preview the loop.';
 
   @override
   String get goToSources => 'Go to sources';
+
+  @override
+  String get goToLibrary => 'Go to library';
 
   @override
   String get nextFrame => 'Next';

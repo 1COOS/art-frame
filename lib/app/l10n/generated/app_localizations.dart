@@ -122,6 +122,18 @@ abstract class AppLocalizations {
   /// **'Sources'**
   String get sourcesTab;
 
+  /// No description provided for @libraryTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryTab;
+
+  /// No description provided for @connectTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connectTab;
+
   /// No description provided for @playbackTab.
   ///
   /// In en, this message translates to:
@@ -169,6 +181,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sources'**
   String get sourcesTitle;
+
+  /// No description provided for @libraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryTitle;
+
+  /// No description provided for @connectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connectTitle;
+
+  /// No description provided for @connectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new sources from local files, directories, media library, or network.'**
+  String get connectBody;
 
   /// No description provided for @sourcesBody.
   ///
@@ -425,7 +455,7 @@ abstract class AppLocalizations {
   /// No description provided for @playbackEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'Open the sources tab, choose a bundled local collection, then return here to preview the loop.'**
+  /// **'Open the library tab, choose a bundled local collection, then return here to preview the loop.'**
   String get playbackEmptyBody;
 
   /// No description provided for @goToSources.
@@ -433,6 +463,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go to sources'**
   String get goToSources;
+
+  /// No description provided for @goToLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to library'**
+  String get goToLibrary;
 
   /// No description provided for @nextFrame.
   ///

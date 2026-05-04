@@ -27,9 +27,14 @@ class AdaptiveShell extends StatelessWidget {
         final l10n = AppLocalizations.of(context);
         final destinations = [
           _ShellDestination(
-            label: l10n.sourcesTab,
-            icon: Icons.folder_open_outlined,
-            selectedIcon: Icons.folder_open,
+            label: l10n.libraryTab,
+            icon: Icons.photo_library_outlined,
+            selectedIcon: Icons.photo_library,
+          ),
+          _ShellDestination(
+            label: l10n.connectTab,
+            icon: Icons.add_link_outlined,
+            selectedIcon: Icons.add_link,
           ),
           _ShellDestination(
             label: l10n.settingsTab,
@@ -39,15 +44,14 @@ class AdaptiveShell extends StatelessWidget {
         ];
 
         final body = navigationShell;
-        final appBar = AppBar(title: Text(l10n.appTitle));
 
         if (type.usesBottomNavigation) {
           return Scaffold(
-            appBar: appBar,
             body: body,
             bottomNavigationBar: NavigationBar(
               selectedIndex: navigationShell.currentIndex,
               onDestinationSelected: _goBranch,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
               destinations: [
                 for (final item in destinations)
                   NavigationDestination(
@@ -61,14 +65,13 @@ class AdaptiveShell extends StatelessWidget {
         }
 
         return Scaffold(
-          appBar: appBar,
           body: Row(
             children: [
               if (type.usesRail)
                 NavigationRail(
                   selectedIndex: navigationShell.currentIndex,
                   onDestinationSelected: _goBranch,
-                  labelType: NavigationRailLabelType.all,
+                  labelType: NavigationRailLabelType.none,
                   destinations: [
                     for (final item in destinations)
                       NavigationRailDestination(
@@ -79,21 +82,13 @@ class AdaptiveShell extends StatelessWidget {
                   ],
                 ),
               if (type.usesSidebar)
-                NavigationDrawer(
+                NavigationRail(
                   selectedIndex: navigationShell.currentIndex,
-                  onDestinationSelected: (index) {
-                    _goBranch(index);
-                  },
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(28, 16, 16, 12),
-                      child: Text(
-                        l10n.appTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
+                  onDestinationSelected: _goBranch,
+                  labelType: NavigationRailLabelType.none,
+                  destinations: [
                     for (final item in destinations)
-                      NavigationDrawerDestination(
+                      NavigationRailDestination(
                         icon: Icon(item.icon),
                         selectedIcon: Icon(item.selectedIcon),
                         label: Text(item.label),
@@ -103,11 +98,14 @@ class AdaptiveShell extends StatelessWidget {
               Expanded(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    border: type.usesSidebar
-                        ? const Border(
-                            left: BorderSide(color: Color(0x14000000)),
-                          )
-                        : null,
+                    border: Border(
+                      left: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outlineVariant
+                            .withValues(alpha: 0.3),
+                      ),
+                    ),
                   ),
                   child: body,
                 ),

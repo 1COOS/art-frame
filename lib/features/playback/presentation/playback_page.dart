@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../app/router/app_destination.dart';
+import '../../../app/theme/app_motion.dart';
 import '../../../core/widgets/local_image.dart';
 import '../../../core/widgets/media_asset_image.dart';
 import '../../settings/domain/playback_settings.dart';
@@ -28,10 +30,13 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
   int _currentIndex = 0;
   Timer? _timer;
   String? _timerKey;
+  bool _controlsVisible = true;
+  Timer? _hideTimer;
 
   @override
   void initState() {
     super.initState();
+    _scheduleHideControls(firstEntry: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.listenManual(selectedSourceProvider, (_, _) {
         _reconfigureTimer();
@@ -51,9 +56,25 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
     _configureTimer(source: source, settings: settings);
   }
 
+  void _scheduleHideControls({bool firstEntry = false}) {
+    _hideTimer?.cancel();
+    final delay = firstEntry ? 5 : 3;
+    _hideTimer = Timer(Duration(seconds: delay), () {
+      if (mounted) setState(() => _controlsVisible = false);
+    });
+  }
+
+  void _showControls() {
+    if (!_controlsVisible) {
+      setState(() => _controlsVisible = true);
+    }
+    _scheduleHideControls();
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
+    _hideTimer?.cancel();
     super.dispose();
   }
 
@@ -88,8 +109,8 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
                       const SizedBox(height: 20),
                       FilledButton(
                         onPressed: () =>
-                            context.go(AppDestination.sources.path),
-                        child: Text(l10n.goToSources),
+                            context.go(AppDestination.library.path),
+                        child: Text(l10n.goToLibrary),
                       ),
                     ],
                   ),
@@ -107,88 +128,109 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _PlaybackFrame(
-              item: currentItem,
-              nextItem: nextItem,
-              headers:
-                  source.networkConfig?.authorizationHeaders ??
-                  const <String, String>{},
-              networkConfig: source.networkConfig,
+      body: MouseRegion(
+        onHover: (_) => _showControls(),
+        child: GestureDetector(
+          onTap: _showControls,
+          onHorizontalDragEnd: (details) {
+            if (details.primaryVelocity == null) return;
+            if (details.primaryVelocity! < -200) {
+              _showNext();
+              _resetAutoplayTimer();
+            } else if (details.primaryVelocity! > 200) {
+              _showPrevious();
+              _resetAutoplayTimer();
+            }
+          },
+          child: SafeArea(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _PlaybackFrame(
+                  item: currentItem,
+                  nextItem: nextItem,
+                  headers:
+                      source.networkConfig?.authorizationHeaders ??
+                      const <String, String>{},
+                  networkConfig: source.networkConfig,
+                ),
+                // Auto-hiding controls
+                AnimatedOpacity(
+                  opacity: _controlsVisible ? 1.0 : 0.0,
+                  duration: AppMotion.standard,
+                  curve: AppMotion.curve,
+                  child: IgnorePointer(
+                    ignoring: !_controlsVisible,
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: 16,
+                          left: 16,
+                          right: 16,
+                          child: Row(
+                            children: [
+                              _GlassButton(
+                                onTap: () =>
+                                    context.go(AppDestination.library.path),
+                                child: const Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const Spacer(),
+                              _GlassBadge(
+                                value: l10n.playbackCounter(
+                                  normalizedIndex + 1,
+                                  source.items.length,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          left: 24,
+                          right: 24,
+                          bottom: 24,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  source.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(color: Colors.white70),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              _GlassButton(
+                                onTap: _showPrevious,
+                                child: const Icon(
+                                  Icons.chevron_left,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              _GlassButton(
+                                onTap: _showNext,
+                                child: const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Row(
-                children: [
-                  FilledButton.tonal(
-                    onPressed: () => context.go(AppDestination.sources.path),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                    ),
-                    child: const Icon(Icons.arrow_back),
-                  ),
-                  const Spacer(),
-                  _OverlayBadge(
-                    value: l10n.playbackCounter(
-                      normalizedIndex + 1,
-                      source.items.length,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 24,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      source.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleMedium?.copyWith(color: Colors.white70),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  FilledButton.tonal(
-                    onPressed: _showPrevious,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Icon(Icons.chevron_left),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.tonal(
-                    onPressed: _showNext,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Icon(Icons.chevron_right),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -261,6 +303,10 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
       _currentIndex =
           (_currentIndex - 1 + source.items.length) % source.items.length;
     });
+  }
+
+  void _resetAutoplayTimer() {
+    _reconfigureTimer();
   }
 }
 
@@ -581,9 +627,21 @@ class _PlaybackFrameState extends ConsumerState<_PlaybackFrame> {
     }
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 180),
-      switchInCurve: Curves.easeOut,
-      switchOutCurve: Curves.easeOut,
+      duration: AppMotion.emphasis,
+      switchInCurve: AppMotion.curve,
+      switchOutCurve: AppMotion.curve,
+      transitionBuilder: (child, animation) {
+        final scaleIn = Tween<double>(begin: 1.05, end: 1.0).animate(animation);
+        final scaleOut = Tween<double>(begin: 1.0, end: 0.95).animate(animation);
+        final isIncoming = child.key == ValueKey(displayedImage.cacheKey);
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: isIncoming ? scaleIn : scaleOut,
+            child: child,
+          ),
+        );
+      },
       child: KeyedSubtree(
         key: ValueKey(displayedImage.cacheKey),
         child: displayedImage.child,
@@ -611,25 +669,54 @@ class _RemoteErrorPlaceholder extends StatelessWidget {
   }
 }
 
-class _OverlayBadge extends StatelessWidget {
-  const _OverlayBadge({required this.value});
+class _GlassButton extends StatelessWidget {
+  const _GlassButton({required this.onTap, required this.child});
+
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            color: Colors.white.withValues(alpha: 0.12),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassBadge extends StatelessWidget {
+  const _GlassBadge({required this.value});
 
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.44),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.labelLarge?.copyWith(color: Colors.white),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          color: Colors.white.withValues(alpha: 0.12),
+          child: Text(
+            value,
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(color: Colors.white),
+          ),
         ),
       ),
     );

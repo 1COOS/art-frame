@@ -1,5 +1,6 @@
 enum AppDestination {
-  sources('/sources'),
+  library('/library'),
+  connect('/connect'),
   playback('/playback'),
   settings('/settings');
 
