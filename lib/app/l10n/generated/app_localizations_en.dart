@@ -58,6 +58,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectTitle => 'Connect';
 
   @override
+  String get connectSavedSectionTitle => 'Saved';
+
+  @override
+  String get connectAddFilesSectionTitle => 'Add files';
+
+  @override
+  String get connectNoSavedSources => 'No saved sources yet.';
+
+  @override
+  String get connectOpenFolderFailed => 'Could not open the folder right now.';
+
+  @override
   String get connectBody =>
       'Add new sources from local files, directories, media library, or network.';
 
@@ -220,7 +232,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addMediaLibrarySource => 'Add media library';
 
   @override
-  String get addNetworkSource => 'Add network source';
+  String get addNetworkSource => 'Via network share';
 
   @override
   String get localFilesSourceTitle => 'Local files';
@@ -307,4 +319,132 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mediaLibraryUnavailable =>
       'Media library import is not available on this platform';
+
+  @override
+  String get networkConfigTitle => 'Add Network';
+
+  @override
+  String get networkConfigEditTitle => 'Edit Network';
+
+  @override
+  String get networkConfigFieldTitle => 'Title';
+
+  @override
+  String get networkConfigFieldHost => 'Host';
+
+  @override
+  String get networkConfigFieldPort => 'Port';
+
+  @override
+  String get networkConfigFieldSharePath => 'Share path';
+
+  @override
+  String get networkConfigFieldRemotePath => 'Remote path';
+
+  @override
+  String get networkConfigFieldUsername => 'Username';
+
+  @override
+  String get networkConfigFieldDomain => 'Domain / Workgroup';
+
+  @override
+  String get networkConfigFieldPassword => 'Password';
+
+  @override
+  String get networkConfigUseHttps => 'Use HTTPS';
+
+  @override
+  String get networkConfigHintHostSmb => '192.168.2.100 or demo.local';
+
+  @override
+  String get networkConfigHintHostWebDav =>
+      '192.168.2.100, demo.local:5005, or full URL';
+
+  @override
+  String get networkConfigHintPortSmb => '445 (SMB default)';
+
+  @override
+  String get networkConfigHintPortWebDav =>
+      '80 / 443 (auto-detected from Host if empty)';
+
+  @override
+  String get networkConfigHintSharePath => '/public/gallery';
+
+  @override
+  String get networkConfigHintRemotePath =>
+      '/gallery (auto-detected from Host URL if empty)';
+
+  @override
+  String get networkConfigTestConnection => 'Test connection';
+
+  @override
+  String get networkConfigSave => 'Save';
+
+  @override
+  String get networkConfigTesting => 'Testing…';
+
+  @override
+  String get networkConfigSaving => 'Saving…';
+
+  @override
+  String get networkConfigTestSuccess => 'Connection successful';
+
+  @override
+  String get networkConfigErrorIncompleteSmb =>
+      'SMB configuration is incomplete';
+
+  @override
+  String get networkConfigErrorIncompleteWebDav =>
+      'WebDAV configuration is incomplete';
+
+  @override
+  String get networkConfigErrorUnsupportedSftp => 'SFTP is not yet supported';
+
+  @override
+  String get networkConfigErrorValidationSmb =>
+      'SMB validation failed. Check address, share path, username, and password.';
+
+  @override
+  String get networkConfigErrorValidationWebDav =>
+      'WebDAV validation failed. Check protocol, address, port, and path.';
+
+  @override
+  String get networkConfigDirectoryTitleSmb => 'Select SMB Directory';
+
+  @override
+  String get networkConfigDirectoryTitleWebDav => 'Select WebDAV Directory';
+
+  @override
+  String networkConfigDirectoryImageCount(int count) {
+    return '$count images in current directory';
+  }
+
+  @override
+  String networkConfigDirectorySubfolderCount(int count) {
+    return '$count subfolders';
+  }
+
+  @override
+  String get networkConfigDirectoryGoBack => 'Go back';
+
+  @override
+  String get networkConfigDirectoryBackToConfig => 'Back to config';
+
+  @override
+  String get networkConfigDirectoryImport => 'Import this directory';
+
+  @override
+  String get networkConfigDirectoryNoImages => 'No images in current directory';
+
+  @override
+  String get networkConfigDirectoryNoSubfolders =>
+      'No subfolders in current directory';
+
+  @override
+  String get networkConfigDirectoryNoSmbSubfolders =>
+      'No subfolders in current SMB directory';
+
+  @override
+  String get networkConfigDirectoryReadError =>
+      'Failed to read directory, please retry';
 }

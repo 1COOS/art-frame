@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/l10n/generated/app_localizations.dart';
 import '../../domain/network_source_config.dart';
 import 'network_endpoint_parser.dart';
 import '../../domain/network_source_result.dart';
@@ -63,6 +64,7 @@ Future<NetworkSourceDraft?> showWebDavDirectoryBrowser(
               return;
             }
 
+            final l10n = AppLocalizations.of(dialogContext);
             setState(() {
               loading = true;
               errorText = null;
@@ -91,7 +93,7 @@ Future<NetworkSourceDraft?> showWebDavDirectoryBrowser(
                 loading = false;
                 errorText = unexpectedWebDavMessage(
                   error,
-                  fallback: '读取目录失败，请重试',
+                  fallback: l10n.networkConfigDirectoryReadError,
                 );
               });
             }
@@ -110,9 +112,10 @@ Future<NetworkSourceDraft?> showWebDavDirectoryBrowser(
           }
 
           void importCurrentDirectory() {
+            final l10n = AppLocalizations.of(dialogContext);
             if (currentResult.items.isEmpty) {
               setState(() {
-                errorText = '当前目录下没有可用图片';
+                errorText = l10n.networkConfigDirectoryNoImages;
               });
               return;
             }
@@ -133,8 +136,10 @@ Future<NetworkSourceDraft?> showWebDavDirectoryBrowser(
               .map((item) => item.title)
               .join('\n');
 
+          final l10n = AppLocalizations.of(dialogContext);
+
           return DirectoryDialogShell(
-            title: '选择 WebDAV 目录',
+            title: l10n.networkConfigDirectoryTitleWebDav,
             normalizedPath: currentResult.normalizedPath,
             itemCount: currentResult.items.length,
             imagePreview: imagePreview,
@@ -150,10 +155,10 @@ Future<NetworkSourceDraft?> showWebDavDirectoryBrowser(
                 .toList(growable: false),
             canGoBack: trail.isNotEmpty,
             isLoading: loading,
-            emptyDirectoriesLabel: '当前目录下没有子文件夹',
-            backLabel: '返回上一级',
-            cancelLabel: '返回配置',
-            importLabel: '导入当前目录',
+            emptyDirectoriesLabel: l10n.networkConfigDirectoryNoSubfolders,
+            backLabel: l10n.networkConfigDirectoryGoBack,
+            cancelLabel: l10n.networkConfigDirectoryBackToConfig,
+            importLabel: l10n.networkConfigDirectoryImport,
             errorText: errorText,
             onGoBack: goBack,
             onCancel: () => Navigator.of(dialogContext).pop(),
@@ -227,7 +232,7 @@ Future<NetworkSourceDraft?> showSmbDirectoryBrowser(
                 loading = false;
                 errorText = unexpectedSmbMessage(
                   error,
-                  fallback: '读取 SMB 目录失败，请重试',
+                  fallback: AppLocalizations.of(dialogContext).networkConfigDirectoryReadError,
                 );
               });
             }
@@ -246,9 +251,10 @@ Future<NetworkSourceDraft?> showSmbDirectoryBrowser(
           }
 
           void importCurrentDirectory() {
+            final l10n = AppLocalizations.of(dialogContext);
             if (currentResult.items.isEmpty) {
               setState(() {
-                errorText = '当前目录下没有可用图片';
+                errorText = l10n.networkConfigDirectoryNoImages;
               });
               return;
             }
@@ -270,8 +276,10 @@ Future<NetworkSourceDraft?> showSmbDirectoryBrowser(
               .map((item) => item.title)
               .join('\n');
 
+          final l10nSmb = AppLocalizations.of(dialogContext);
+
           return DirectoryDialogShell(
-            title: '选择 SMB 目录',
+            title: l10nSmb.networkConfigDirectoryTitleSmb,
             normalizedPath: currentResult.normalizedPath,
             itemCount: currentResult.items.length,
             imagePreview: imagePreview,
@@ -287,10 +295,10 @@ Future<NetworkSourceDraft?> showSmbDirectoryBrowser(
                 .toList(growable: false),
             canGoBack: trail.isNotEmpty,
             isLoading: loading,
-            emptyDirectoriesLabel: '当前 SMB 目录下没有子文件夹',
-            backLabel: '返回上一级',
-            cancelLabel: '返回配置',
-            importLabel: '导入当前目录',
+            emptyDirectoriesLabel: l10nSmb.networkConfigDirectoryNoSmbSubfolders,
+            backLabel: l10nSmb.networkConfigDirectoryGoBack,
+            cancelLabel: l10nSmb.networkConfigDirectoryBackToConfig,
+            importLabel: l10nSmb.networkConfigDirectoryImport,
             errorText: errorText,
             onGoBack: goBack,
             onCancel: () => Navigator.of(dialogContext).pop(),
@@ -362,7 +370,7 @@ class DirectoryDialogShell extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 8),
-              Text('当前目录包含 $itemCount 张图片'),
+              Text(AppLocalizations.of(context).networkConfigDirectoryImageCount(itemCount)),
               if (imagePreview.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -381,7 +389,7 @@ class DirectoryDialogShell extends StatelessWidget {
                       label: Text(backLabel),
                     ),
                   const Spacer(),
-                  Text('子文件夹 $directoryCount 个'),
+                  Text(AppLocalizations.of(context).networkConfigDirectorySubfolderCount(directoryCount)),
                 ],
               ),
               const SizedBox(height: 8),

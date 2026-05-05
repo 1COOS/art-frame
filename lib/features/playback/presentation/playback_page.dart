@@ -188,40 +188,62 @@ class _PlaybackPageState extends ConsumerState<PlaybackPage> {
                             ],
                           ),
                         ),
+                        // 左侧 - 上一张
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: _showPrevious,
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                width: 64,
+                                height: 120,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.chevron_left,
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  size: 48,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // 右侧 - 下一张
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: _showNext,
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                width: 64,
+                                height: 120,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  size: 48,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                         Positioned(
                           left: 24,
                           right: 24,
                           bottom: 24,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  source.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(color: Colors.white70),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              _GlassButton(
-                                onTap: _showPrevious,
-                                child: const Icon(
-                                  Icons.chevron_left,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              _GlassButton(
-                                onTap: _showNext,
-                                child: const Icon(
-                                  Icons.chevron_right,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            source.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(color: Colors.white70),
                           ),
                         ),
                       ],

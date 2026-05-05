@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../shell/adaptive_shell.dart';
+import '../theme/app_motion.dart';
 import '../../features/connect/presentation/connect_page.dart';
+import '../../features/connect/presentation/network_config_page.dart';
 import '../../features/playback/presentation/playback_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../features/sources/presentation/sources_page.dart';
@@ -54,6 +57,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => const NoTransitionPage(
           child: PlaybackPage(),
         ),
+      ),
+      GoRoute(
+        path: AppDestination.networkConfig.path,
+        pageBuilder: (context, state) {
+          final args = state.extra as NetworkConfigPageArgs?;
+          return CustomTransitionPage(
+            child: NetworkConfigPage(args: args),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              final curved = CurvedAnimation(
+                parent: animation,
+                curve: AppMotion.curve,
+              );
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(curved),
+                child: child,
+              );
+            },
+            transitionDuration: AppMotion.standard,
+            reverseTransitionDuration: AppMotion.standard,
+          );
+        },
       ),
     ],
     redirect: (context, state) {

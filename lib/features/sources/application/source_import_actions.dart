@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/l10n/generated/app_localizations.dart';
 import '../../../app/router/app_destination.dart';
+import '../../../features/connect/presentation/network_config_page.dart';
 import 'local/local_file_picker.dart';
 import 'local_sources_controller.dart';
 import 'local/media_library_picker.dart';
@@ -129,17 +130,25 @@ class SourceImportActions {
 
 
   Future<void> pickNetworkSource() async {
-    final result = await ref
-        .read(networkSourceServiceProvider)
-        .createSource(
-          context,
-          title: l10n.networkSourceTitle,
-          description: l10n.networkSourceDescription,
-          badge: l10n.networkSourceBadge,
+    final service = ref.read(networkSourceServiceProvider);
+    if (!service.isSupported) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.networkSourceUnavailable)),
         );
-    if (!context.mounted) {
+      }
       return;
     }
+
+    final result = await context.push<NetworkSourceValidationResult>(
+      AppDestination.networkConfig.path,
+      extra: NetworkConfigPageArgs(
+        title: l10n.networkSourceTitle,
+        description: l10n.networkSourceDescription,
+        badge: l10n.networkSourceBadge,
+      ),
+    );
+    if (!context.mounted || result == null) return;
 
     switch (result) {
       case NetworkSourceValidationSuccess(:final draft):
@@ -187,18 +196,16 @@ class SourceImportActions {
       config: source.networkConfig!,
       items: source.items,
     );
-    final result = await ref
-        .read(networkSourceServiceProvider)
-        .createSource(
-          context,
-          title: l10n.networkSourceTitle,
-          description: l10n.networkSourceDescription,
-          badge: l10n.networkSourceBadge,
-          initialDraft: draft,
-        );
-    if (!context.mounted) {
-      return;
-    }
+    final result = await context.push<NetworkSourceValidationResult>(
+      AppDestination.networkConfig.path,
+      extra: NetworkConfigPageArgs(
+        title: l10n.networkSourceTitle,
+        description: l10n.networkSourceDescription,
+        badge: l10n.networkSourceBadge,
+        initialDraft: draft,
+      ),
+    );
+    if (!context.mounted || result == null) return;
 
     switch (result) {
       case NetworkSourceValidationSuccess(:final draft):

@@ -43,7 +43,7 @@ class SourcesPage extends ConsumerWidget {
           return CustomScrollView(
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 32, 16, 8),
                 sliver: SliverToBoxAdapter(
                   child: Text(
                     l10n.libraryTitle,
@@ -60,46 +60,42 @@ class SourcesPage extends ConsumerWidget {
                     crossAxisSpacing: 12,
                     childAspectRatio: 0.85,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final source = sources[index];
-                      return _SourceGridItem(
-                        source: source,
-                        isSelected: source.id == selectedId,
-                        onTap: () {
-                          ref
-                              .read(selectedSourceControllerProvider.notifier)
-                              .select(source.id);
-                          if (context.mounted) {
-                            context.go(AppDestination.playback.path);
-                          }
-                        },
-                        onEdit: source.kind != MediaSourceKind.network
-                            ? null
-                            : () => actions.editNetworkSource(
-                                  source,
-                                  selectedId: selectedId,
-                                ),
-                        onRemove: source.kind == MediaSourceKind.bundled
-                            ? null
-                            : () async {
-                                final removingSelected =
-                                    source.id == selectedId;
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final source = sources[index];
+                    return _SourceGridItem(
+                      source: source,
+                      isSelected: source.id == selectedId,
+                      onTap: () {
+                        ref
+                            .read(selectedSourceControllerProvider.notifier)
+                            .select(source.id);
+                        if (context.mounted) {
+                          context.go(AppDestination.playback.path);
+                        }
+                      },
+                      onEdit: source.kind != MediaSourceKind.network
+                          ? null
+                          : () => actions.editNetworkSource(
+                              source,
+                              selectedId: selectedId,
+                            ),
+                      onRemove: source.kind == MediaSourceKind.bundled
+                          ? null
+                          : () async {
+                              final removingSelected = source.id == selectedId;
+                              await ref
+                                  .read(localSourcesControllerProvider.notifier)
+                                  .remove(source.id);
+                              if (removingSelected) {
                                 await ref
                                     .read(
-                                        localSourcesControllerProvider.notifier)
-                                    .remove(source.id);
-                                if (removingSelected) {
-                                  await ref
-                                      .read(selectedSourceControllerProvider
-                                          .notifier)
-                                      .clear();
-                                }
-                              },
-                      );
-                    },
-                    childCount: sources.length,
-                  ),
+                                      selectedSourceControllerProvider.notifier,
+                                    )
+                                    .clear();
+                              }
+                            },
+                    );
+                  }, childCount: sources.length),
                 ),
               ),
             ],
@@ -141,22 +137,17 @@ class _SourceCoverImage extends ConsumerWidget {
           ),
         );
         return smbBytes.when(
-          data: (bytes) => SizedBox.expand(
-            child: Image.memory(bytes, fit: BoxFit.cover),
-          ),
+          data: (bytes) =>
+              SizedBox.expand(child: Image.memory(bytes, fit: BoxFit.cover)),
           error: (_, _) => _CoverPlaceholder(colorScheme: colorScheme),
-          loading: () => _CoverPlaceholder(
-            colorScheme: colorScheme,
-            isLoading: true,
-          ),
+          loading: () =>
+              _CoverPlaceholder(colorScheme: colorScheme, isLoading: true),
         );
       }
 
       final bytes = item.tryDecodeBase64Path();
       if (bytes != null) {
-        return SizedBox.expand(
-          child: Image.memory(bytes, fit: BoxFit.cover),
-        );
+        return SizedBox.expand(child: Image.memory(bytes, fit: BoxFit.cover));
       }
 
       return SizedBox.expand(
@@ -175,6 +166,7 @@ class _SourceCoverImage extends ConsumerWidget {
     );
   }
 }
+
 class _SourceGridItem extends ConsumerStatefulWidget {
   const _SourceGridItem({
     required this.source,
@@ -372,4 +364,3 @@ class _GlassIconButton extends StatelessWidget {
     );
   }
 }
-

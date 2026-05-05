@@ -16,11 +16,15 @@
   "sourcesTitle": "图源",
   "libraryTitle": "媒体库",
   "connectTitle": "连接",
+  "connectSavedSectionTitle": "已保存",
+  "connectAddFilesSectionTitle": "添加文件",
+  "connectNoSavedSources": "暂时还没有已保存的图源。",
+  "connectOpenFolderFailed": "暂时无法打开该文件夹。",
   "connectBody": "从本地文件、本地目录、媒体库或网络添加新的图源。",
   "sourcesBody": "统一管理内置、本地文件、本地目录、媒体库与网络图源，并将其用于播放。",
   "playbackTitle": "播放页",
   "playbackBody": "当前选中的图源会自动轮播，也支持手动切换。",
-  "settingsTitle": "设置中心",
+  "settingsTitle": "设置",
   "settingsBody": "在一个页面中统一管理语言、外观、播放行为与关键应用信息。",
   "settingsGeneralTitle": "通用",
   "settingsGeneralBody": "配置整个应用共享的语言、主题模式与屏幕方向。",
@@ -67,7 +71,7 @@
   "addLocalFilesSource": "添加本地文件",
   "addLocalDirectorySource": "添加本地目录",
   "addMediaLibrarySource": "添加媒体库",
-  "addNetworkSource": "添加网络图源",
+  "addNetworkSource": "通过网络共享",
   "localFilesSourceTitle": "本地文件",
   "localFilesSourceDescription": "从当前设备选择图片，并保存为可复用的本地图源。",
   "localFilesSourceBadge": "本地文件",
@@ -141,5 +145,57 @@
   },
   "networkSourceImported": "已从网络图源导入 {count} 张图片",
   "mediaLibraryPermissionDenied": "未获得媒体库访问权限",
-  "mediaLibraryUnavailable": "当前平台不支持媒体库导入"
+  "mediaLibraryUnavailable": "当前平台不支持媒体库导入",
+  "networkConfigTitle": "添加网络",
+  "networkConfigEditTitle": "编辑网络",
+  "networkConfigFieldTitle": "标题",
+  "networkConfigFieldHost": "主机地址",
+  "networkConfigFieldPort": "端口",
+  "networkConfigFieldSharePath": "共享路径",
+  "networkConfigFieldRemotePath": "远程路径",
+  "networkConfigFieldUsername": "用户名",
+  "networkConfigFieldDomain": "域 / 工作组",
+  "networkConfigFieldPassword": "密码",
+  "networkConfigUseHttps": "使用 HTTPS",
+  "networkConfigHintHostSmb": "192.168.2.100 或 demo.local",
+  "networkConfigHintHostWebDav": "192.168.2.100、demo.local:5005 或完整 URL",
+  "networkConfigHintPortSmb": "445（SMB 标准端口）",
+  "networkConfigHintPortWebDav": "80 / 443（可留空，自动从 Host 推断）",
+  "networkConfigHintSharePath": "/public/gallery",
+  "networkConfigHintRemotePath": "/gallery（可留空，自动从 Host URL 提取）",
+  "networkConfigTestConnection": "测试连接",
+  "networkConfigSave": "保存",
+  "networkConfigTesting": "测试中…",
+  "networkConfigSaving": "保存中…",
+  "networkConfigTestSuccess": "连接成功",
+  "networkConfigErrorIncompleteSmb": "SMB 配置不完整",
+  "networkConfigErrorIncompleteWebDav": "WebDAV 配置不完整",
+  "networkConfigErrorUnsupportedSftp": "暂不支持 SFTP",
+  "networkConfigErrorValidationSmb": "SMB 验证失败，请检查地址、共享目录、账号和密码",
+  "networkConfigErrorValidationWebDav": "WebDAV 验证失败，请检查协议、地址、端口和路径",
+  "networkConfigDirectoryTitleSmb": "选择 SMB 目录",
+  "networkConfigDirectoryTitleWebDav": "选择 WebDAV 目录",
+  "networkConfigDirectoryImageCount": "当前目录包含 {count} 张图片",
+  "@networkConfigDirectoryImageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkConfigDirectorySubfolderCount": "{count} 个子文件夹",
+  "@networkConfigDirectorySubfolderCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkConfigDirectoryGoBack": "返回上一级",
+  "networkConfigDirectoryBackToConfig": "返回配置",
+  "networkConfigDirectoryImport": "导入当前目录",
+  "networkConfigDirectoryNoImages": "当前目录下没有可用图片",
+  "networkConfigDirectoryNoSubfolders": "当前目录下没有子文件夹",
+  "networkConfigDirectoryNoSmbSubfolders": "当前 SMB 目录下没有子文件夹",
+  "networkConfigDirectoryReadError": "读取目录失败，请重试"
 }

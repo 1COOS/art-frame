@@ -194,6 +194,30 @@ abstract class AppLocalizations {
   /// **'Connect'**
   String get connectTitle;
 
+  /// No description provided for @connectSavedSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get connectSavedSectionTitle;
+
+  /// No description provided for @connectAddFilesSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add files'**
+  String get connectAddFilesSectionTitle;
+
+  /// No description provided for @connectNoSavedSources.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved sources yet.'**
+  String get connectNoSavedSources;
+
+  /// No description provided for @connectOpenFolderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the folder right now.'**
+  String get connectOpenFolderFailed;
+
   /// No description provided for @connectBody.
   ///
   /// In en, this message translates to:
@@ -503,7 +527,7 @@ abstract class AppLocalizations {
   /// No description provided for @addNetworkSource.
   ///
   /// In en, this message translates to:
-  /// **'Add network source'**
+  /// **'Via network share'**
   String get addNetworkSource;
 
   /// No description provided for @localFilesSourceTitle.
@@ -637,6 +661,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Media library import is not available on this platform'**
   String get mediaLibraryUnavailable;
+
+  /// No description provided for @networkConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Network'**
+  String get networkConfigTitle;
+
+  /// No description provided for @networkConfigEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Network'**
+  String get networkConfigEditTitle;
+
+  /// No description provided for @networkConfigFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get networkConfigFieldTitle;
+
+  /// No description provided for @networkConfigFieldHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get networkConfigFieldHost;
+
+  /// No description provided for @networkConfigFieldPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get networkConfigFieldPort;
+
+  /// No description provided for @networkConfigFieldSharePath.
+  ///
+  /// In en, this message translates to:
+  /// **'Share path'**
+  String get networkConfigFieldSharePath;
+
+  /// No description provided for @networkConfigFieldRemotePath.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote path'**
+  String get networkConfigFieldRemotePath;
+
+  /// No description provided for @networkConfigFieldUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get networkConfigFieldUsername;
+
+  /// No description provided for @networkConfigFieldDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'Domain / Workgroup'**
+  String get networkConfigFieldDomain;
+
+  /// No description provided for @networkConfigFieldPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get networkConfigFieldPassword;
+
+  /// No description provided for @networkConfigUseHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'Use HTTPS'**
+  String get networkConfigUseHttps;
+
+  /// No description provided for @networkConfigHintHostSmb.
+  ///
+  /// In en, this message translates to:
+  /// **'192.168.2.100 or demo.local'**
+  String get networkConfigHintHostSmb;
+
+  /// No description provided for @networkConfigHintHostWebDav.
+  ///
+  /// In en, this message translates to:
+  /// **'192.168.2.100, demo.local:5005, or full URL'**
+  String get networkConfigHintHostWebDav;
+
+  /// No description provided for @networkConfigHintPortSmb.
+  ///
+  /// In en, this message translates to:
+  /// **'445 (SMB default)'**
+  String get networkConfigHintPortSmb;
+
+  /// No description provided for @networkConfigHintPortWebDav.
+  ///
+  /// In en, this message translates to:
+  /// **'80 / 443 (auto-detected from Host if empty)'**
+  String get networkConfigHintPortWebDav;
+
+  /// No description provided for @networkConfigHintSharePath.
+  ///
+  /// In en, this message translates to:
+  /// **'/public/gallery'**
+  String get networkConfigHintSharePath;
+
+  /// No description provided for @networkConfigHintRemotePath.
+  ///
+  /// In en, this message translates to:
+  /// **'/gallery (auto-detected from Host URL if empty)'**
+  String get networkConfigHintRemotePath;
+
+  /// No description provided for @networkConfigTestConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get networkConfigTestConnection;
+
+  /// No description provided for @networkConfigSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get networkConfigSave;
+
+  /// No description provided for @networkConfigTesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing…'**
+  String get networkConfigTesting;
+
+  /// No description provided for @networkConfigSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get networkConfigSaving;
+
+  /// No description provided for @networkConfigTestSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection successful'**
+  String get networkConfigTestSuccess;
+
+  /// No description provided for @networkConfigErrorIncompleteSmb.
+  ///
+  /// In en, this message translates to:
+  /// **'SMB configuration is incomplete'**
+  String get networkConfigErrorIncompleteSmb;
+
+  /// No description provided for @networkConfigErrorIncompleteWebDav.
+  ///
+  /// In en, this message translates to:
+  /// **'WebDAV configuration is incomplete'**
+  String get networkConfigErrorIncompleteWebDav;
+
+  /// No description provided for @networkConfigErrorUnsupportedSftp.
+  ///
+  /// In en, this message translates to:
+  /// **'SFTP is not yet supported'**
+  String get networkConfigErrorUnsupportedSftp;
+
+  /// No description provided for @networkConfigErrorValidationSmb.
+  ///
+  /// In en, this message translates to:
+  /// **'SMB validation failed. Check address, share path, username, and password.'**
+  String get networkConfigErrorValidationSmb;
+
+  /// No description provided for @networkConfigErrorValidationWebDav.
+  ///
+  /// In en, this message translates to:
+  /// **'WebDAV validation failed. Check protocol, address, port, and path.'**
+  String get networkConfigErrorValidationWebDav;
+
+  /// No description provided for @networkConfigDirectoryTitleSmb.
+  ///
+  /// In en, this message translates to:
+  /// **'Select SMB Directory'**
+  String get networkConfigDirectoryTitleSmb;
+
+  /// No description provided for @networkConfigDirectoryTitleWebDav.
+  ///
+  /// In en, this message translates to:
+  /// **'Select WebDAV Directory'**
+  String get networkConfigDirectoryTitleWebDav;
+
+  /// No description provided for @networkConfigDirectoryImageCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} images in current directory'**
+  String networkConfigDirectoryImageCount(int count);
+
+  /// No description provided for @networkConfigDirectorySubfolderCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} subfolders'**
+  String networkConfigDirectorySubfolderCount(int count);
+
+  /// No description provided for @networkConfigDirectoryGoBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get networkConfigDirectoryGoBack;
+
+  /// No description provided for @networkConfigDirectoryBackToConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to config'**
+  String get networkConfigDirectoryBackToConfig;
+
+  /// No description provided for @networkConfigDirectoryImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import this directory'**
+  String get networkConfigDirectoryImport;
+
+  /// No description provided for @networkConfigDirectoryNoImages.
+  ///
+  /// In en, this message translates to:
+  /// **'No images in current directory'**
+  String get networkConfigDirectoryNoImages;
+
+  /// No description provided for @networkConfigDirectoryNoSubfolders.
+  ///
+  /// In en, this message translates to:
+  /// **'No subfolders in current directory'**
+  String get networkConfigDirectoryNoSubfolders;
+
+  /// No description provided for @networkConfigDirectoryNoSmbSubfolders.
+  ///
+  /// In en, this message translates to:
+  /// **'No subfolders in current SMB directory'**
+  String get networkConfigDirectoryNoSmbSubfolders;
+
+  /// No description provided for @networkConfigDirectoryReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to read directory, please retry'**
+  String get networkConfigDirectoryReadError;
 }
 
 class _AppLocalizationsDelegate

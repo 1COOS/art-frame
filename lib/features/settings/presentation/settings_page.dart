@@ -16,7 +16,6 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final currentLocale = ref.watch(localeControllerProvider);
     final playbackSettings =
         ref.watch(playbackSettingsControllerProvider).asData?.value ??
@@ -31,23 +30,12 @@ class SettingsPage extends ConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 760),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
           children: [
-            Text(
-              l10n.settingsTitle,
-              style: theme.textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.settingsBody,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
+            Text(l10n.settingsTitle, style: theme.textTheme.headlineMedium),
             const SizedBox(height: 24),
             _SettingsSection(
               title: l10n.settingsGeneralTitle,
-              description: l10n.settingsGeneralBody,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -140,7 +128,6 @@ class SettingsPage extends ConsumerWidget {
             const SizedBox(height: 16),
             _SettingsSection(
               title: l10n.settingsPlaybackTitle,
-              description: l10n.settingsPlaybackBody,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -177,7 +164,6 @@ class SettingsPage extends ConsumerWidget {
             const SizedBox(height: 16),
             _SettingsSection(
               title: l10n.settingsAboutTitle,
-              description: l10n.settingsAboutBody,
               child: Column(
                 children: [
                   ListTile(
@@ -234,21 +220,16 @@ class SettingsPage extends ConsumerWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.settingsLinkOpenFailed)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.settingsLinkOpenFailed)));
   }
 }
 
 class _SettingsSection extends StatelessWidget {
-  const _SettingsSection({
-    required this.title,
-    required this.description,
-    required this.child,
-  });
+  const _SettingsSection({required this.title, required this.child});
 
   final String title;
-  final String description;
   final Widget child;
 
   @override
@@ -262,8 +243,6 @@ class _SettingsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(description, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 20),
             child,
           ],

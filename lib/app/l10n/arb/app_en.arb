@@ -16,6 +16,10 @@
   "sourcesTitle": "Sources",
   "libraryTitle": "Library",
   "connectTitle": "Connect",
+  "connectSavedSectionTitle": "Saved",
+  "connectAddFilesSectionTitle": "Add files",
+  "connectNoSavedSources": "No saved sources yet.",
+  "connectOpenFolderFailed": "Could not open the folder right now.",
   "connectBody": "Add new sources from local files, directories, media library, or network.",
   "sourcesBody": "Manage bundled, local file, local directory, media library, and network sources for playback.",
   "playbackTitle": "Playback",
@@ -67,7 +71,7 @@
   "addLocalFilesSource": "Add local files",
   "addLocalDirectorySource": "Add local directory",
   "addMediaLibrarySource": "Add media library",
-  "addNetworkSource": "Add network source",
+  "addNetworkSource": "Via network share",
   "localFilesSourceTitle": "Local files",
   "localFilesSourceDescription": "Images picked from this device and stored as a reusable local source.",
   "localFilesSourceBadge": "Local files",
@@ -141,5 +145,57 @@
   },
   "networkSourceImported": "Imported {count} images from the network source",
   "mediaLibraryPermissionDenied": "Media library access was not granted",
-  "mediaLibraryUnavailable": "Media library import is not available on this platform"
+  "mediaLibraryUnavailable": "Media library import is not available on this platform",
+  "networkConfigTitle": "Add Network",
+  "networkConfigEditTitle": "Edit Network",
+  "networkConfigFieldTitle": "Title",
+  "networkConfigFieldHost": "Host",
+  "networkConfigFieldPort": "Port",
+  "networkConfigFieldSharePath": "Share path",
+  "networkConfigFieldRemotePath": "Remote path",
+  "networkConfigFieldUsername": "Username",
+  "networkConfigFieldDomain": "Domain / Workgroup",
+  "networkConfigFieldPassword": "Password",
+  "networkConfigUseHttps": "Use HTTPS",
+  "networkConfigHintHostSmb": "192.168.2.100 or demo.local",
+  "networkConfigHintHostWebDav": "192.168.2.100, demo.local:5005, or full URL",
+  "networkConfigHintPortSmb": "445 (SMB default)",
+  "networkConfigHintPortWebDav": "80 / 443 (auto-detected from Host if empty)",
+  "networkConfigHintSharePath": "/public/gallery",
+  "networkConfigHintRemotePath": "/gallery (auto-detected from Host URL if empty)",
+  "networkConfigTestConnection": "Test connection",
+  "networkConfigSave": "Save",
+  "networkConfigTesting": "Testing…",
+  "networkConfigSaving": "Saving…",
+  "networkConfigTestSuccess": "Connection successful",
+  "networkConfigErrorIncompleteSmb": "SMB configuration is incomplete",
+  "networkConfigErrorIncompleteWebDav": "WebDAV configuration is incomplete",
+  "networkConfigErrorUnsupportedSftp": "SFTP is not yet supported",
+  "networkConfigErrorValidationSmb": "SMB validation failed. Check address, share path, username, and password.",
+  "networkConfigErrorValidationWebDav": "WebDAV validation failed. Check protocol, address, port, and path.",
+  "networkConfigDirectoryTitleSmb": "Select SMB Directory",
+  "networkConfigDirectoryTitleWebDav": "Select WebDAV Directory",
+  "networkConfigDirectoryImageCount": "{count} images in current directory",
+  "@networkConfigDirectoryImageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkConfigDirectorySubfolderCount": "{count} subfolders",
+  "@networkConfigDirectorySubfolderCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkConfigDirectoryGoBack": "Go back",
+  "networkConfigDirectoryBackToConfig": "Back to config",
+  "networkConfigDirectoryImport": "Import this directory",
+  "networkConfigDirectoryNoImages": "No images in current directory",
+  "networkConfigDirectoryNoSubfolders": "No subfolders in current directory",
+  "networkConfigDirectoryNoSmbSubfolders": "No subfolders in current SMB directory",
+  "networkConfigDirectoryReadError": "Failed to read directory, please retry"
 }
